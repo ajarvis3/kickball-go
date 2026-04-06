@@ -6,9 +6,9 @@ import (
 
     "github.com/aws/aws-lambda-go/events"
     "github.com/aws/aws-lambda-go/lambda"
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"os"
+    "github.com/aws/aws-sdk-go-v2/config"
+    "github.com/aws/aws-sdk-go-v2/service/dynamodb"
+    "os"
 
     "github.com/ajarvis3/kickball-go/internal/db"
     "github.com/ajarvis3/kickball-go/internal/handlers"
@@ -20,6 +20,7 @@ var (
     teamHandler    *handlers.TeamHandlers
     leagueHandler  *handlers.LeagueHandlers
     playerHandler  *handlers.PlayerHandlers
+    leagueRulesHandler *handlers.LeagueRulesHandlers
 )
 
 func init() {
@@ -44,6 +45,7 @@ func init() {
     teamRepo := db.NewTeamRepository(dynamoClient)
     leagueRepo := db.NewLeagueRepository(dynamoClient)
     playerRepo := db.NewPlayerRepository(dynamoClient)
+    leagueRulesRepo := db.NewLeagueRulesRepository(dynamoClient)
 
     // Construct handlers
     atBatHandler = handlers.NewAtBatHandlers(atBatRepo)
@@ -51,6 +53,7 @@ func init() {
     teamHandler = handlers.NewTeamHandlers(teamRepo)
     leagueHandler = handlers.NewLeagueHandlers(leagueRepo)
     playerHandler = handlers.NewPlayerHandlers(playerRepo)
+    leagueRulesHandler = handlers.NewLeagueRulesHandlers(leagueRulesRepo)
 }
 
 func router(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -75,6 +78,11 @@ func router(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIG
     case "/leagues":
         if req.HTTPMethod == "POST" {
             return leagueHandler.CreateLeague(ctx, req)
+        }
+
+    case "/leaguerules":
+        if req.HTTPMethod == "POST" {
+            return leagueRulesHandler.CreateLeagueRules(ctx, req)
         }
 
     case "/players":
