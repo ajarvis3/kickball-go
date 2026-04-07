@@ -85,16 +85,13 @@ func (h *LeagueRulesHandlers) GetLeagueRules(ctx context.Context, req events.API
 		return responses.JsonResponse(http.StatusBadRequest, map[string]string{"error": "invalid version"}), nil
 	}
 
-	rules, err := h.Rules.GetLeagueRules(ctx, leagueID, v)
-	if err != nil {
-		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), nil
-	}
-	if rules == nil {
-		return responses.JsonResponse(http.StatusNotFound, map[string]string{"error": "league rules not found"}), nil
+	rules, resp := fetchResource(func() (*domain.LeagueRules, error) { return h.Rules.GetLeagueRules(ctx, leagueID, v) }, "league rules not found")
+	if resp != nil {
+		return *resp, nil
 	}
 
 	// map domain -> dto
-	resp := dto.LeagueRulesResponse{
+	respDto := dto.LeagueRulesResponse{
 		LeagueID:               rules.LeagueID,
 		RulesVersion:           rules.RulesVersion,
 		MaxStrikes:             rules.MaxStrikes,
@@ -107,5 +104,5 @@ func (h *LeagueRulesHandlers) GetLeagueRules(ctx context.Context, req events.API
 		Metadata:               rules.Metadata,
 	}
 
-	return responses.JsonResponse(http.StatusOK, resp), nil
+	return responses.JsonResponse(http.StatusOK, respDto), nil
 }

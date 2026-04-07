@@ -35,12 +35,13 @@ func (h *GameHandlers) CreateGame(ctx context.Context, req events.APIGatewayProx
 	game := domain.Game{GameID: uuid.NewString(), LeagueID: leagueID, RulesVersion: 1, HomeTeamID: body.HomeTeamID, AwayTeamID: body.AwayTeamID, State: domain.GameState{}}
 
 	// Load league rules to size inning runs and initialize state
-	lr, err := h.Rules.GetLeagueRules(ctx, leagueID, game.RulesVersion)
-	if err != nil {
-		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), nil
-	}
-	if lr == nil {
-		return responses.JsonResponse(http.StatusBadRequest, map[string]string{"error": "league rules not found for rulesVersion"}), nil
+	lr, resp := fetchResource(func() (*domain.LeagueRules, error) { return h.Rules.GetLeagueRules(ctx, leagueID, game.RulesVersion) }, "league rules not found for rulesVersion")
+	if resp != nil {
+		// Treat missing rules as bad request (keeps previous behavior)
+		if resp.StatusCode == http.StatusNotFound {
+			return responses.JsonResponse(http.StatusBadRequest, map[string]string{"error": "league rules not found for rulesVersion"}), nil
+		}
+		return *resp, nil
 	}
 
 	game.State.Inning = 1
@@ -55,8 +56,8 @@ func (h *GameHandlers) CreateGame(ctx context.Context, req events.APIGatewayProx
 	if err := h.Games.PutGame(ctx, game); err != nil {
 		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), nil
 	}
-	resp := dto.GameResponse{GameID: game.GameID, LeagueID: game.LeagueID, HomeTeamID: game.HomeTeamID, AwayTeamID: game.AwayTeamID, RulesVersion: game.RulesVersion, State: dto.GameStateDTO{Inning: game.State.Inning, Half: game.State.Half, Outs: game.State.Outs, HomeScore: game.State.HomeScore, AwayScore: game.State.AwayScore}}
-	return responses.JsonResponse(http.StatusCreated, resp), nil
+	respDto := dto.GameResponse{GameID: game.GameID, LeagueID: game.LeagueID, HomeTeamID: game.HomeTeamID, AwayTeamID: game.AwayTeamID, RulesVersion: game.RulesVersion, State: dto.GameStateDTO{Inning: game.State.Inning, Half: game.State.Half, Outs: game.State.Outs, HomeScore: game.State.HomeScore, AwayScore: game.State.AwayScore}}
+	return responses.JsonResponse(http.StatusCreated, respDto), nil
 }
 
 func (h *GameHandlers) GetGame(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -67,15 +68,12 @@ func (h *GameHandlers) GetGame(ctx context.Context, req events.APIGatewayProxyRe
 	}
 
 	if gameID != "" {
-		g, err := h.Games.GetGame(ctx, gameID)
-		if err != nil {
-			return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), nil
+		g, resp := fetchResource(func() (*domain.Game, error) { return h.Games.GetGame(ctx, gameID) }, "game not found")
+		if resp != nil {
+			return *resp, nil
 		}
-		if g == nil {
-			return responses.JsonResponse(http.StatusNotFound, map[string]string{"error": "game not found"}), nil
-		}
-		resp := dto.GameResponse{GameID: g.GameID, LeagueID: g.LeagueID, HomeTeamID: g.HomeTeamID, AwayTeamID: g.AwayTeamID, RulesVersion: g.RulesVersion, State: dto.GameStateDTO{Inning: g.State.Inning, Half: g.State.Half, Outs: g.State.Outs, HomeScore: g.State.HomeScore, AwayScore: g.State.AwayScore}}
-		return responses.JsonResponse(http.StatusOK, resp), nil
+		respDto := dto.GameResponse{GameID: g.GameID, LeagueID: g.LeagueID, HomeTeamID: g.HomeTeamID, AwayTeamID: g.AwayTeamID, RulesVersion: g.RulesVersion, State: dto.GameStateDTO{Inning: g.State.Inning, Half: g.State.Half, Outs: g.State.Outs, HomeScore: g.State.HomeScore, AwayScore: g.State.AwayScore}}
+		return responses.JsonResponse(http.StatusOK, respDto), nil
 	}
 
 	games, err := h.Games.ListGamesByLeague(ctx, leagueID)

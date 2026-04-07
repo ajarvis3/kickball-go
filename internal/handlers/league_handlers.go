@@ -53,13 +53,10 @@ func (h *LeagueHandlers) GetLeague(ctx context.Context, req events.APIGatewayPro
 	if leagueID == "" {
 		return responses.JsonResponse(http.StatusBadRequest, map[string]string{"error": "leagueId query parameter is required"}), nil
 	}
-	lg, err := h.Leagues.GetLeague(ctx, leagueID)
-	if err != nil {
-		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), nil
+	lg, resp := fetchResource(func() (*domain.League, error) { return h.Leagues.GetLeague(ctx, leagueID) }, "league not found")
+	if resp != nil {
+		return *resp, nil
 	}
-	if lg == nil {
-		return responses.JsonResponse(http.StatusNotFound, map[string]string{"error": "league not found"}), nil
-	}
-	resp := dto.LeagueResponse{LeagueID: lg.LeagueID, Name: lg.Name, CurrentRulesVersion: lg.CurrentRulesVersion}
-	return responses.JsonResponse(http.StatusOK, resp), nil
+	respDto := dto.LeagueResponse{LeagueID: lg.LeagueID, Name: lg.Name, CurrentRulesVersion: lg.CurrentRulesVersion}
+	return responses.JsonResponse(http.StatusOK, respDto), nil
 }

@@ -9,8 +9,8 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/ajarvis3/kickball-go/internal/db"
-	"github.com/ajarvis3/kickball-go/internal/domain"
 	"github.com/ajarvis3/kickball-go/internal/handlers/dto"
+	"github.com/ajarvis3/kickball-go/internal/mappers"
 	"github.com/ajarvis3/kickball-go/pkg/responses"
 )
 
@@ -31,12 +31,11 @@ func (h *TeamHandlers) CreateTeam(ctx context.Context, req events.APIGatewayProx
 	if leagueID == "" || body.Name == "" {
 		return responses.JsonResponse(http.StatusBadRequest, map[string]string{"error": "leagueId and name are required"}), nil
 	}
-	team := domain.Team{TeamID: uuid.NewString(), LeagueID: leagueID, Name: body.Name}
+	team := mappers.CreateTeamRequestToDomain(body, uuid.NewString(), leagueID)
 	if err := h.Teams.PutTeam(ctx, team); err != nil {
 		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), nil
 	}
-	resp := dto.TeamResponse{TeamID: team.TeamID, LeagueID: team.LeagueID, Name: team.Name}
-	return responses.JsonResponse(http.StatusCreated, resp), nil
+	return responses.JsonResponse(http.StatusCreated, mappers.TeamToResponse(team)), nil
 }
 
 func (h *TeamHandlers) GetTeams(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -50,7 +49,7 @@ func (h *TeamHandlers) GetTeams(ctx context.Context, req events.APIGatewayProxyR
 	}
 	var out []dto.TeamResponse
 	for _, t := range teams {
-		out = append(out, dto.TeamResponse{TeamID: t.TeamID, LeagueID: t.LeagueID, Name: t.Name})
+		out = append(out, mappers.TeamToResponse(t))
 	}
 	return responses.JsonResponse(http.StatusOK, out), nil
 }

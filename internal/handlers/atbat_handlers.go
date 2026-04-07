@@ -39,21 +39,15 @@ func (h *AtBatHandlers) RecordAtBat(ctx context.Context, req events.APIGatewayPr
 	atbat := mappers.RecordAtBatRequestToDomain(body, gameID, leagueID)
 
 	// Load current game
-	g, err := h.Games.GetGame(ctx, gameID)
-	if err != nil {
-		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), nil
-	}
-	if g == nil {
-		return responses.JsonResponse(http.StatusNotFound, map[string]string{"error": "game not found"}), nil
+	g, resp := fetchResource(func() (*domain.Game, error) { return h.Games.GetGame(ctx, gameID) }, "game not found")
+	if resp != nil {
+		return *resp, nil
 	}
 
 	// Load league rules for the game's rules version
-	lr, err := h.Rules.GetLeagueRules(ctx, leagueID, g.RulesVersion)
-	if err != nil {
-		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), nil
-	}
-	if lr == nil {
-		return responses.JsonResponse(http.StatusNotFound, map[string]string{"error": "league rules not found"}), nil
+	lr, resp := fetchResource(func() (*domain.LeagueRules, error) { return h.Rules.GetLeagueRules(ctx, leagueID, g.RulesVersion) }, "league rules not found")
+	if resp != nil {
+		return *resp, nil
 	}
 
 	// Apply at-bat to game state
