@@ -14,8 +14,6 @@ import (
 	"github.com/ajarvis3/kickball-go/pkg/responses"
 )
 
-
-
 type LeagueHandlers struct {
 	Leagues db.LeagueRepository
 }
@@ -29,15 +27,15 @@ func (h *LeagueHandlers) CreateLeague(ctx context.Context, req events.APIGateway
 	var body dto.CreateLeagueRequest
 	if err := json.Unmarshal([]byte(req.Body), &body); err != nil {
 		return responses.JsonResponse(http.StatusBadRequest, map[string]string{"error": err.Error()}), nil
-    }
+	}
 	if body.Name == "" {
 		return responses.JsonResponse(http.StatusBadRequest, map[string]string{"error": "league name is required"}), nil
 	}
 	league := domain.League{
-        LeagueID:            uuid.NewString(),
-        Name:                body.Name,
-        CurrentRulesVersion: 1,
-    }
+		LeagueID:            uuid.NewString(),
+		Name:                body.Name,
+		CurrentRulesVersion: 1,
+	}
 	err := h.Leagues.PutLeague(ctx, league)
 	if err != nil {
 		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), err

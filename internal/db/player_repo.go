@@ -2,9 +2,10 @@ package db
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/ajarvis3/kickball-go/internal/domain"
+	"github.com/ajarvis3/kickball-go/internal/keys"
+	"github.com/ajarvis3/kickball-go/internal/storage"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
@@ -26,12 +27,9 @@ func NewPlayerRepository(client *Client) PlayerRepository {
 }
 
 func (r *playerRepo) PutPlayer(ctx context.Context, player domain.Player) error {
-	// Build main table keys
-	player.PK = fmt.Sprintf("TEAM#%s", player.TeamID)
-	player.SK = fmt.Sprintf("PLAYER#%s", player.PlayerID)
+	it := storage.PlayerToItem(player)
 
-	// Marshal the item
-	item, err := attributevalue.MarshalMap(player)
+	item, err := attributevalue.MarshalMap(it)
 	if err != nil {
 		return err
 	}
@@ -48,10 +46,10 @@ func (r *playerRepo) PutPlayer(ctx context.Context, player domain.Player) error 
 }
 
 func (r *playerRepo) ListPlayersByTeam(ctx context.Context, teamID string) ([]domain.Player, error) {
-	pk := fmt.Sprintf("TEAM#%s", teamID)
+	pk := keys.TeamPK(teamID)
 	expr := "PK = :pk AND begins_with(SK, :prefix)"
 	out, err := r.client.ddb.Query(ctx, &dynamodb.QueryInput{
-		TableName: aws.String(r.client.tableName),
+		TableName:              aws.String(r.client.tableName),
 		KeyConditionExpression: aws.String(expr),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":pk":     &types.AttributeValueMemberS{Value: pk},
@@ -63,11 +61,11 @@ func (r *playerRepo) ListPlayersByTeam(ctx context.Context, teamID string) ([]do
 	}
 	var players []domain.Player
 	for _, it := range out.Items {
-		var p domain.Player
-		if err := attributevalue.UnmarshalMap(it, &p); err != nil {
+		var stored storage.PlayerItem
+		if err := attributevalue.UnmarshalMap(it, &stored); err != nil {
 			return nil, err
 		}
-		players = append(players, p)
+		players = append(players, storage.ItemToPlayer(stored))
 	}
 	return players, nil
 }

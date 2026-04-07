@@ -2,13 +2,14 @@ package db
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/ajarvis3/kickball-go/internal/domain"
-	apperrors "github.com/ajarvis3/kickball-go/pkg/apperrors"
+	"github.com/ajarvis3/kickball-go/internal/keys"
+	"github.com/ajarvis3/kickball-go/internal/storage"
+	"github.com/ajarvis3/kickball-go/pkg/apperrors"
 
+	"github.com/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
@@ -28,37 +29,32 @@ func NewAtBatRepository(client *Client) AtBatRepository {
 }
 
 func (r *atBatRepo) PutAtBat(ctx context.Context, atbat domain.AtBat) error {
-    // Build main table keys
-    atbat.PK = fmt.Sprintf("GAME#%s", atbat.GameID)
-    atbat.SK = fmt.Sprintf("ATBAT#%d", atbat.Seq)
+	// Convert domain to storage item
+	it := storage.AtbatToItem(atbat)
 
-    // Build GSI keys for querying at-bats by player
-    atbat.GSIPlayerAtBatPK = fmt.Sprintf("PLAYER#%s", atbat.PlayerID)
-    atbat.GSIPlayerAtBatSK = fmt.Sprintf("GAME#%s#ATBAT#%d", atbat.GameID, atbat.Seq)
+	// Marshal the item
+	item, err := attributevalue.MarshalMap(it)
+	if err != nil {
+		return err
+	}
 
-    // Marshal the item
-    item, err := attributevalue.MarshalMap(atbat)
-    if err != nil {
-        return err
-    }
+	// Write to DynamoDB
+	_, err = r.client.ddb.PutItem(ctx, &dynamodb.PutItemInput{
+		TableName: aws.String(r.client.tableName),
+		Item:      item,
+	})
+	if err != nil {
+		return err
+	}
 
-    // Write to DynamoDB
-    _, err = r.client.ddb.PutItem(ctx, &dynamodb.PutItemInput{
-        TableName: aws.String(r.client.tableName),
-        Item:      item,
-    })
-    if err != nil {
-        return err
-    }
-
-    return nil
+	return nil
 }
 
 func (r *atBatRepo) ListAtBatsByGame(ctx context.Context, gameID string) ([]domain.AtBat, error) {
-	pk := fmt.Sprintf("GAME#%s", gameID)
+	pk := keys.GamePK(gameID)
 	expr := "PK = :pk AND begins_with(SK, :prefix)"
 	out, err := r.client.ddb.Query(ctx, &dynamodb.QueryInput{
-		TableName: aws.String(r.client.tableName),
+		TableName:              aws.String(r.client.tableName),
 		KeyConditionExpression: aws.String(expr),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":pk":     &types.AttributeValueMemberS{Value: pk},
@@ -70,11 +66,11 @@ func (r *atBatRepo) ListAtBatsByGame(ctx context.Context, gameID string) ([]doma
 	}
 	var outAt []domain.AtBat
 	for _, it := range out.Items {
-		var a domain.AtBat
-		if err := attributevalue.UnmarshalMap(it, &a); err != nil {
+		var stored storage.AtbatItem
+		if err := attributevalue.UnmarshalMap(it, &stored); err != nil {
 			return nil, err
 		}
-		outAt = append(outAt, a)
+		outAt = append(outAt, storage.ItemToAtbat(stored))
 	}
 	if len(outAt) == 0 {
 		return nil, apperrors.ErrNotFound
@@ -85,14 +81,14 @@ func (r *atBatRepo) ListAtBatsByGame(ctx context.Context, gameID string) ([]doma
 func (r *atBatRepo) ListAtBatsByPlayer(ctx context.Context, playerID string) ([]domain.AtBat, error) {
 	// Query the GSI that indexes at-bats by player
 	indexName := "GSIPlayerAtBat"
-	pk := fmt.Sprintf("PLAYER#%s", playerID)
+	pk := keys.GSI2PK(playerID)
 	expr := "GSIPlayerAtBatPK = :pk"
 	out, err := r.client.ddb.Query(ctx, &dynamodb.QueryInput{
-		TableName: aws.String(r.client.tableName),
-		IndexName: aws.String(indexName),
+		TableName:              aws.String(r.client.tableName),
+		IndexName:              aws.String(indexName),
 		KeyConditionExpression: aws.String(expr),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":pk":     &types.AttributeValueMemberS{Value: pk},
+			":pk": &types.AttributeValueMemberS{Value: pk},
 		},
 	})
 	if err != nil {
@@ -100,11 +96,11 @@ func (r *atBatRepo) ListAtBatsByPlayer(ctx context.Context, playerID string) ([]
 	}
 	var outAt []domain.AtBat
 	for _, it := range out.Items {
-		var a domain.AtBat
-		if err := attributevalue.UnmarshalMap(it, &a); err != nil {
+		var stored storage.AtbatItem
+		if err := attributevalue.UnmarshalMap(it, &stored); err != nil {
 			return nil, err
 		}
-		outAt = append(outAt, a)
+		outAt = append(outAt, storage.ItemToAtbat(stored))
 	}
 	if len(outAt) == 0 {
 		return nil, apperrors.ErrNotFound

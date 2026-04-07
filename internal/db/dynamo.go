@@ -7,7 +7,7 @@ import (
 )
 
 type Client struct {
-	ddb *dynamodb.Client
+	ddb       *dynamodb.Client
 	tableName string
 }
 

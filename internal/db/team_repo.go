@@ -2,9 +2,11 @@ package db
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/ajarvis3/kickball-go/internal/domain"
+	"github.com/ajarvis3/kickball-go/internal/keys"
+	"github.com/ajarvis3/kickball-go/internal/storage"
+	"github.com/ajarvis3/kickball-go/pkg/apperrors"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
@@ -26,17 +28,13 @@ func NewTeamRepository(client *Client) TeamRepository {
 }
 
 func (r *teamRepo) PutTeam(ctx context.Context, team domain.Team) error {
-	// Build main table keys
-	team.PK = fmt.Sprintf("LEAGUE#%s", team.LeagueID)
-	team.SK = fmt.Sprintf("TEAM#%s", team.TeamID)
+	it := storage.TeamToItem(team)
 
-	// Marshal the item
-	item, err := attributevalue.MarshalMap(team)
+	item, err := attributevalue.MarshalMap(it)
 	if err != nil {
 		return err
 	}
 
-	// Write to DynamoDB
 	_, err = r.client.ddb.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName: aws.String(r.client.tableName),
 		Item:      item,
@@ -48,10 +46,10 @@ func (r *teamRepo) PutTeam(ctx context.Context, team domain.Team) error {
 }
 
 func (r *teamRepo) ListTeamsByLeague(ctx context.Context, leagueID string) ([]domain.Team, error) {
-	pk := fmt.Sprintf("LEAGUE#%s", leagueID)
+	pk := keys.LeaguePK(leagueID)
 	expr := "PK = :pk AND begins_with(SK, :prefix)"
 	out, err := r.client.ddb.Query(ctx, &dynamodb.QueryInput{
-		TableName: aws.String(r.client.tableName),
+		TableName:              aws.String(r.client.tableName),
 		KeyConditionExpression: aws.String(expr),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":pk":     &types.AttributeValueMemberS{Value: pk},
@@ -63,11 +61,14 @@ func (r *teamRepo) ListTeamsByLeague(ctx context.Context, leagueID string) ([]do
 	}
 	var teams []domain.Team
 	for _, it := range out.Items {
-		var t domain.Team
-		if err := attributevalue.UnmarshalMap(it, &t); err != nil {
+		var stored storage.TeamItem
+		if err := attributevalue.UnmarshalMap(it, &stored); err != nil {
 			return nil, err
 		}
-		teams = append(teams, t)
+		teams = append(teams, storage.ItemToTeam(stored))
+	}
+	if len(teams) == 0 {
+		return nil, apperrors.ErrNotFound
 	}
 	return teams, nil
 }

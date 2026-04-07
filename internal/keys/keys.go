@@ -21,3 +21,7 @@ func GSI2PK(playerID string) string { return fmt.Sprintf("PLAYER#%s", playerID) 
 func GSI2SK(gameID string, seq int) string {
 	return fmt.Sprintf("GAME#%s#ATBAT#%04d", gameID, seq)
 }
+
+func RulesSK(version int) string { return fmt.Sprintf("RULES#%d", version) }
+
+func LineupSK(teamID string) string { return fmt.Sprintf("LINEUP#%s", teamID) }

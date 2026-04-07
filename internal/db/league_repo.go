@@ -3,12 +3,12 @@ package db
 import (
 	"context"
 	"errors"
-	"fmt"
-	"strconv"
 
-	apperrors "github.com/ajarvis3/kickball-go/pkg/apperrors"
+	"github.com/ajarvis3/kickball-go/pkg/apperrors"
 
 	"github.com/ajarvis3/kickball-go/internal/domain"
+	"github.com/ajarvis3/kickball-go/internal/keys"
+	"github.com/ajarvis3/kickball-go/internal/storage"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
@@ -30,52 +30,49 @@ func NewLeagueRepository(client *Client) LeagueRepository {
 }
 
 func (r *leagueRepo) PutLeague(ctx context.Context, league domain.League) error {
-	// TODO: marshal and PutItem
-    item := map[string]types.AttributeValue{
-        "PK": &types.AttributeValueMemberS{Value: fmt.Sprintf("LEAGUE#%s", league.LeagueID)},
-        "SK": &types.AttributeValueMemberS{Value: fmt.Sprintf("LEAGUE#%s", league.LeagueID)},
-        "leagueId": &types.AttributeValueMemberS{Value: league.LeagueID},
-        "name": &types.AttributeValueMemberS{Value: league.Name},
-        "currentRulesVersion": &types.AttributeValueMemberN{Value: strconv.Itoa(league.CurrentRulesVersion)},
-    }
+	it := storage.LeagueToItem(league)
+	item, err := attributevalue.MarshalMap(it)
+	if err != nil {
+		return err
+	}
+	_, err = r.client.ddb.PutItem(ctx, &dynamodb.PutItemInput{
+		TableName:           aws.String(r.client.tableName),
+		Item:                item,
+		ConditionExpression: aws.String("attribute_not_exists(PK)"),
+	})
 
-    _, err := r.client.ddb.PutItem(ctx, &dynamodb.PutItemInput{
-        TableName:           aws.String(r.client.tableName),
-        Item:                item,
-        ConditionExpression: aws.String("attribute_not_exists(PK)"),
-    })
+	if err != nil {
+		var cce *types.ConditionalCheckFailedException
+		if errors.As(err, &cce) {
+			return apperrors.ErrConflict
+		}
+		return err
+	}
 
-    if err != nil {
-        var cce *types.ConditionalCheckFailedException
-        if errors.As(err, &cce) {
-            return apperrors.ErrConflict
-        }
-        return err
-    }
-
-    return nil
+	return nil
 }
 
 func (r *leagueRepo) GetLeague(ctx context.Context, leagueID string) (*domain.League, error) {
-    key := map[string]types.AttributeValue{
-        "PK": &types.AttributeValueMemberS{Value: fmt.Sprintf("LEAGUE#%s", leagueID)},
-        "SK": &types.AttributeValueMemberS{Value: fmt.Sprintf("LEAGUE#%s", leagueID)},
-    }
-    out, err := r.client.ddb.GetItem(ctx, &dynamodb.GetItemInput{
-        TableName: aws.String(r.client.tableName),
-        Key:       key,
-    })
-    if err != nil {
-        return nil, err
-    }
+	key := map[string]types.AttributeValue{
+		"PK": &types.AttributeValueMemberS{Value: keys.LeaguePK(leagueID)},
+		"SK": &types.AttributeValueMemberS{Value: keys.LeagueSK(leagueID)},
+	}
+	out, err := r.client.ddb.GetItem(ctx, &dynamodb.GetItemInput{
+		TableName: aws.String(r.client.tableName),
+		Key:       key,
+	})
+	if err != nil {
+		return nil, err
+	}
 
-    if out.Item == nil {
-        return nil, apperrors.ErrNotFound
-    }
+	if out.Item == nil {
+		return nil, apperrors.ErrNotFound
+	}
 
-    var league domain.League
-    if err := attributevalue.UnmarshalMap(out.Item, &league); err != nil {
-        return nil, err
-    }
-    return &league, nil
+	var stored storage.LeagueItem
+	if err := attributevalue.UnmarshalMap(out.Item, &stored); err != nil {
+		return nil, err
+	}
+	l := storage.ItemToLeague(stored)
+	return &l, nil
 }
