@@ -38,3 +38,33 @@ func (h *AtBatHandlers) RecordAtBat(ctx context.Context, req events.APIGatewayPr
 	resp := dto.AtBatResponse{GameID: atbat.GameID, PlayerID: atbat.PlayerID, TeamID: atbat.TeamID, Seq: atbat.Seq, Inning: atbat.Inning, Half: atbat.Half, Strikes: atbat.Strikes, Balls: atbat.Balls, Fouls: atbat.Fouls, Result: atbat.Result, RBI: atbat.RBI, Pitches: atbat.Pitches}
 	return responses.JsonResponse(http.StatusCreated, resp), nil
 }
+
+func (h *AtBatHandlers) GetAtBats(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	// Support query params: gameId or playerId
+	gameID := req.QueryStringParameters["gameId"]
+	playerID := req.QueryStringParameters["playerId"]
+	if gameID == "" && playerID == "" {
+		return responses.JsonResponse(http.StatusBadRequest, map[string]string{"error": "gameId or playerId query parameter is required"}), nil
+	}
+
+	var (
+		atbats []domain.AtBat
+		err    error
+	)
+
+	if gameID != "" {
+		atbats, err = h.AtBats.ListAtBatsByGame(ctx, gameID)
+	} else {
+		atbats, err = h.AtBats.ListAtBatsByPlayer(ctx, playerID)
+	}
+	if err != nil {
+		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), err
+	}
+
+	var resp []dto.AtBatResponse
+	for _, a := range atbats {
+		resp = append(resp, dto.AtBatResponse{GameID: a.GameID, PlayerID: a.PlayerID, TeamID: a.TeamID, Seq: a.Seq, Inning: a.Inning, Half: a.Half, Strikes: a.Strikes, Balls: a.Balls, Fouls: a.Fouls, Result: a.Result, RBI: a.RBI, Pitches: a.Pitches})
+	}
+
+	return responses.JsonResponse(http.StatusOK, resp), nil
+}

@@ -49,3 +49,19 @@ func (h *LeagueHandlers) CreateLeague(ctx context.Context, req events.APIGateway
 	}
 	return responses.JsonResponse(http.StatusCreated, resp), nil
 }
+
+func (h *LeagueHandlers) GetLeague(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	leagueID := req.QueryStringParameters["leagueId"]
+	if leagueID == "" {
+		return responses.JsonResponse(http.StatusBadRequest, map[string]string{"error": "leagueId query parameter is required"}), nil
+	}
+	lg, err := h.Leagues.GetLeague(ctx, leagueID)
+	if err != nil {
+		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), err
+	}
+	if lg == nil {
+		return responses.JsonResponse(http.StatusNotFound, map[string]string{"error": "league not found"}), nil
+	}
+	resp := dto.LeagueResponse{LeagueID: lg.LeagueID, Name: lg.Name, CurrentRulesVersion: lg.CurrentRulesVersion}
+	return responses.JsonResponse(http.StatusOK, resp), nil
+}

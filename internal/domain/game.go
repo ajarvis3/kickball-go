@@ -1,12 +1,17 @@
 package domain
 
 type Game struct {
-	GameID       string
-	LeagueID     string
-	RulesVersion int
-	HomeTeamID   string
-	AwayTeamID   string
-	State        GameState
+	PK               string `dynamodbav:"PK"`
+	SK               string `dynamodbav:"SK"`
+	GameID           string `dynamodbav:"GameID"`
+	LeagueID         string `dynamodbav:"LeagueID"`
+	RulesVersion     int    `dynamodbav:"rulesVersion"`
+	HomeTeamID       string `dynamodbav:"homeTeamID"`
+	AwayTeamID       string `dynamodbav:"awayTeamID"`
+	State            GameState
+
+	GSILeagueGamePK string `dynamodbav:"GSILeagueGamePK"`
+	GSILeagueGameSK string `dynamodbav:"GSILeagueGameSK"`
 }
 
 type GameState struct {

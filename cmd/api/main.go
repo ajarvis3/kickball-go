@@ -64,30 +64,48 @@ func router(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIG
         if req.HTTPMethod == "POST" {
             return atBatHandler.RecordAtBat(ctx, req)
         }
+        if req.HTTPMethod == "GET" {
+            return atBatHandler.GetAtBats(ctx, req)
+        }
 
     case "/games":
         if req.HTTPMethod == "POST" {
             return gameHandler.CreateGame(ctx, req)
+        }
+        if req.HTTPMethod == "GET" {
+            return gameHandler.GetGame(ctx, req)
         }
 
     case "/teams":
         if req.HTTPMethod == "POST" {
             return teamHandler.CreateTeam(ctx, req)
         }
+        if req.HTTPMethod == "GET" {
+            return teamHandler.GetTeams(ctx, req)
+        }
 
     case "/leagues":
         if req.HTTPMethod == "POST" {
             return leagueHandler.CreateLeague(ctx, req)
+        }
+        if req.HTTPMethod == "GET" {
+            return leagueHandler.GetLeague(ctx, req)
         }
 
     case "/leaguerules":
         if req.HTTPMethod == "POST" {
             return leagueRulesHandler.CreateLeagueRules(ctx, req)
         }
+        if req.HTTPMethod == "GET" {
+            return leagueRulesHandler.GetLeagueRules(ctx, req)
+        }
 
     case "/players":
         if req.HTTPMethod == "POST" {
             return playerHandler.CreatePlayer(ctx, req)
+        }
+        if req.HTTPMethod == "GET" {
+            return playerHandler.GetPlayers(ctx, req)
         }
     }
 

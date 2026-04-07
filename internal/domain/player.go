@@ -1,10 +1,12 @@
 package domain
 
 type Player struct {
-	PlayerID string
-	TeamID   string
-	LeagueID string
-	Name     string
-	Number   int
-	Position string
+	PK       string `dynamodbav:"PK"`
+	SK       string `dynamodbav:"SK"`
+	PlayerID string `dynamodbav:"PlayerID"`
+	TeamID   string `dynamodbav:"TeamID"`
+	LeagueID string `dynamodbav:"LeagueID"`
+	Name     string `dynamodbav:"name"`
+	Number   int    `dynamodbav:"number"`
+	Position string `dynamodbav:"position"`
 }

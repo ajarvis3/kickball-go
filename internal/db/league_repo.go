@@ -1,18 +1,19 @@
 package db
 
 import (
-    "context"
-    "errors"
-    "fmt"
-    "strconv"
+	"context"
+	"errors"
+	"fmt"
+	"strconv"
 
-    errors2 "github.com/ajarvis3/kickball-go/pkg/errors"
+	apperrors "github.com/ajarvis3/kickball-go/pkg/apperrors"
 
-    "github.com/ajarvis3/kickball-go/internal/domain"
+	"github.com/ajarvis3/kickball-go/internal/domain"
 
-    "github.com/aws/aws-sdk-go-v2/aws"
-    "github.com/aws/aws-sdk-go-v2/service/dynamodb"
-    "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
 
 type LeagueRepository interface {
@@ -47,7 +48,7 @@ func (r *leagueRepo) PutLeague(ctx context.Context, league domain.League) error 
     if err != nil {
         var cce *types.ConditionalCheckFailedException
         if errors.As(err, &cce) {
-            return errors2.ErrConflict
+            return apperrors.ErrConflict
         }
         return err
     }
@@ -56,6 +57,25 @@ func (r *leagueRepo) PutLeague(ctx context.Context, league domain.League) error 
 }
 
 func (r *leagueRepo) GetLeague(ctx context.Context, leagueID string) (*domain.League, error) {
-	// TODO: GetItem and unmarshal
-	return nil, nil
+    key := map[string]types.AttributeValue{
+        "PK": &types.AttributeValueMemberS{Value: fmt.Sprintf("LEAGUE#%s", leagueID)},
+        "SK": &types.AttributeValueMemberS{Value: fmt.Sprintf("LEAGUE#%s", leagueID)},
+    }
+    out, err := r.client.ddb.GetItem(ctx, &dynamodb.GetItemInput{
+        TableName: aws.String(r.client.tableName),
+        Key:       key,
+    })
+    if err != nil {
+        return nil, err
+    }
+
+    if out.Item == nil {
+        return nil, apperrors.ErrNotFound
+    }
+
+    var league domain.League
+    if err := attributevalue.UnmarshalMap(out.Item, &league); err != nil {
+        return nil, err
+    }
+    return &league, nil
 }

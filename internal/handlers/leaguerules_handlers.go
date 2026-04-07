@@ -4,6 +4,7 @@ import (
     "context"
     "encoding/json"
     "net/http"
+    "strconv"
 
     "github.com/aws/aws-lambda-go/events"
 
@@ -69,4 +70,42 @@ func (h *LeagueRulesHandlers) CreateLeagueRules(ctx context.Context, req events.
     }
 
     return responses.JsonResponse(http.StatusCreated, resp), nil
+}
+
+func (h *LeagueRulesHandlers) GetLeagueRules(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+    // Expect query params: leagueId and version
+    leagueID := req.QueryStringParameters["leagueId"]
+    versionStr := req.QueryStringParameters["version"]
+    if leagueID == "" || versionStr == "" {
+        return responses.JsonResponse(http.StatusBadRequest, map[string]string{"error": "leagueId and version query parameters are required"}), nil
+    }
+
+    v, err := strconv.Atoi(versionStr)
+    if err != nil {
+        return responses.JsonResponse(http.StatusBadRequest, map[string]string{"error": "invalid version"}), nil
+    }
+
+    rules, err := h.Rules.GetLeagueRules(ctx, leagueID, v)
+    if err != nil {
+        return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), err
+    }
+    if rules == nil {
+        return responses.JsonResponse(http.StatusNotFound, map[string]string{"error": "league rules not found"}), nil
+    }
+
+    // map domain -> dto
+    resp := dto.LeagueRulesResponse{
+        LeagueID:            rules.LeagueID,
+        RulesVersion:        rules.RulesVersion,
+        MaxStrikes:          rules.MaxStrikes,
+        MaxBalls:            rules.MaxBalls,
+        MaxFouls:            rules.MaxFouls,
+        MaxInnings:          rules.MaxInnings,
+        MercyRunsPerInning:  rules.MercyRunsPerInning,
+        MercyAppliesLastInning: rules.MercyAppliesLastInning,
+        GameMercyRuns:       rules.GameMercyRuns,
+        Metadata:            rules.Metadata,
+    }
+
+    return responses.JsonResponse(http.StatusOK, resp), nil
 }

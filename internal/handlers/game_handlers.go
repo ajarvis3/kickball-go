@@ -38,3 +38,33 @@ func (h *GameHandlers) CreateGame(ctx context.Context, req events.APIGatewayProx
 	resp := dto.GameResponse{GameID: game.GameID, LeagueID: game.LeagueID, HomeTeamID: game.HomeTeamID, AwayTeamID: game.AwayTeamID, RulesVersion: game.RulesVersion, State: dto.GameStateDTO{Inning: game.State.Inning, Half: game.State.Half, Outs: game.State.Outs, HomeScore: game.State.HomeScore, AwayScore: game.State.AwayScore}}
 	return responses.JsonResponse(http.StatusCreated, resp), nil
 }
+
+func (h *GameHandlers) GetGame(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	gameID := req.QueryStringParameters["gameId"]
+	leagueID := req.QueryStringParameters["leagueId"]
+	if gameID == "" && leagueID == "" {
+		return responses.JsonResponse(http.StatusBadRequest, map[string]string{"error": "gameId or leagueId query parameter is required"}), nil
+	}
+
+	if gameID != "" {
+		g, err := h.Games.GetGame(ctx, gameID)
+		if err != nil {
+			return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), err
+		}
+		if g == nil {
+			return responses.JsonResponse(http.StatusNotFound, map[string]string{"error": "game not found"}), nil
+		}
+		resp := dto.GameResponse{GameID: g.GameID, LeagueID: g.LeagueID, HomeTeamID: g.HomeTeamID, AwayTeamID: g.AwayTeamID, RulesVersion: g.RulesVersion, State: dto.GameStateDTO{Inning: g.State.Inning, Half: g.State.Half, Outs: g.State.Outs, HomeScore: g.State.HomeScore, AwayScore: g.State.AwayScore}}
+		return responses.JsonResponse(http.StatusOK, resp), nil
+	}
+
+	games, err := h.Games.ListGamesByLeague(ctx, leagueID)
+	if err != nil {
+		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), err
+	}
+	var out []dto.GameResponse
+	for _, g := range games {
+		out = append(out, dto.GameResponse{GameID: g.GameID, LeagueID: g.LeagueID, HomeTeamID: g.HomeTeamID, AwayTeamID: g.AwayTeamID, RulesVersion: g.RulesVersion, State: dto.GameStateDTO{Inning: g.State.Inning, Half: g.State.Half, Outs: g.State.Outs, HomeScore: g.State.HomeScore, AwayScore: g.State.AwayScore}})
+	}
+	return responses.JsonResponse(http.StatusOK, out), nil
+}

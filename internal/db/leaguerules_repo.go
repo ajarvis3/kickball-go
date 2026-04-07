@@ -6,7 +6,7 @@ import (
     "fmt"
     "strconv"
 
-    errors2 "github.com/ajarvis3/kickball-go/pkg/errors"
+    "github.com/ajarvis3/kickball-go/pkg/apperrors"
     "github.com/ajarvis3/kickball-go/internal/domain"
 
     "github.com/aws/aws-sdk-go-v2/aws"
@@ -50,13 +50,13 @@ func (r *leagueRulesRepo) PutLeagueRules(ctx context.Context, rules domain.Leagu
 
     if err != nil {
         var cce *types.ConditionalCheckFailedException
-        if fmt.Errorf("%w", err) != nil && (errors2.ErrConflict != nil) {
+        if fmt.Errorf("%w", err) != nil && (apperrors.ErrConflict != nil) {
             _ = cce // keep lint happy; falling through to default
         }
         // Use simple conflict detection similar to others
         var typedCce *types.ConditionalCheckFailedException
         if err != nil && (fmt.Sprintf("%T", err) == fmt.Sprintf("%T", typedCce)) {
-            return errors2.ErrConflict
+            return apperrors.ErrConflict
         }
         return err
     }

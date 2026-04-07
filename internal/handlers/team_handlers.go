@@ -38,3 +38,19 @@ func (h *TeamHandlers) CreateTeam(ctx context.Context, req events.APIGatewayProx
 	resp := dto.TeamResponse{TeamID: team.TeamID, LeagueID: team.LeagueID, Name: team.Name}
 	return responses.JsonResponse(http.StatusCreated, resp), nil
 }
+
+func (h *TeamHandlers) GetTeams(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	leagueID := req.QueryStringParameters["leagueId"]
+	if leagueID == "" {
+		return responses.JsonResponse(http.StatusBadRequest, map[string]string{"error": "leagueId query parameter is required"}), nil
+	}
+	teams, err := h.Teams.ListTeamsByLeague(ctx, leagueID)
+	if err != nil {
+		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), err
+	}
+	var out []dto.TeamResponse
+	for _, t := range teams {
+		out = append(out, dto.TeamResponse{TeamID: t.TeamID, LeagueID: t.LeagueID, Name: t.Name})
+	}
+	return responses.JsonResponse(http.StatusOK, out), nil
+}
