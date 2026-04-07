@@ -11,6 +11,7 @@ import (
 	"github.com/ajarvis3/kickball-go/internal/db"
 	"github.com/ajarvis3/kickball-go/internal/domain"
 	"github.com/ajarvis3/kickball-go/internal/handlers/dto"
+	"github.com/ajarvis3/kickball-go/internal/mappers"
 	"github.com/ajarvis3/kickball-go/pkg/responses"
 )
 
@@ -31,21 +32,12 @@ func (h *LeagueHandlers) CreateLeague(ctx context.Context, req events.APIGateway
 	if body.Name == "" {
 		return responses.JsonResponse(http.StatusBadRequest, map[string]string{"error": "league name is required"}), nil
 	}
-	league := domain.League{
-		LeagueID:            uuid.NewString(),
-		Name:                body.Name,
-		CurrentRulesVersion: 1,
-	}
+	league := mappers.CreateLeagueRequestToDomain(body, uuid.NewString())
 	err := h.Leagues.PutLeague(ctx, league)
 	if err != nil {
 		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), nil
 	}
-	resp := dto.LeagueResponse{
-		LeagueID:            league.LeagueID,
-		Name:                league.Name,
-		CurrentRulesVersion: league.CurrentRulesVersion,
-	}
-	return responses.JsonResponse(http.StatusCreated, resp), nil
+	return responses.JsonResponse(http.StatusCreated, mappers.LeagueToResponse(league)), nil
 }
 
 func (h *LeagueHandlers) GetLeague(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -57,6 +49,5 @@ func (h *LeagueHandlers) GetLeague(ctx context.Context, req events.APIGatewayPro
 	if resp != nil {
 		return *resp, nil
 	}
-	respDto := dto.LeagueResponse{LeagueID: lg.LeagueID, Name: lg.Name, CurrentRulesVersion: lg.CurrentRulesVersion}
-	return responses.JsonResponse(http.StatusOK, respDto), nil
+	return responses.JsonResponse(http.StatusOK, mappers.LeagueToResponse(*lg)), nil
 }

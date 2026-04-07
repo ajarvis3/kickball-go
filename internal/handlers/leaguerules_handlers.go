@@ -11,6 +11,7 @@ import (
 	"github.com/ajarvis3/kickball-go/internal/db"
 	"github.com/ajarvis3/kickball-go/internal/domain"
 	"github.com/ajarvis3/kickball-go/internal/handlers/dto"
+	"github.com/ajarvis3/kickball-go/internal/mappers"
 	"github.com/ajarvis3/kickball-go/pkg/responses"
 )
 
@@ -39,37 +40,13 @@ func (h *LeagueRulesHandlers) CreateLeagueRules(ctx context.Context, req events.
 		version = 1
 	}
 
-	rules := domain.LeagueRules{
-		LeagueID:               leagueID,
-		RulesVersion:           version,
-		MaxStrikes:             body.MaxStrikes,
-		MaxBalls:               body.MaxBalls,
-		MaxFouls:               body.MaxFouls,
-		MaxInnings:             body.MaxInnings,
-		MercyRunsPerInning:     body.MercyRunsPerInning,
-		MercyAppliesLastInning: body.MercyAppliesLastInning,
-		GameMercyRuns:          body.GameMercyRuns,
-		Metadata:               body.Metadata,
-	}
+	rules := mappers.CreateLeagueRulesRequestToDomain(body, leagueID, version)
 
 	if err := h.Rules.PutLeagueRules(ctx, rules); err != nil {
 		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), nil
 	}
 
-	resp := dto.LeagueRulesResponse{
-		LeagueID:               rules.LeagueID,
-		RulesVersion:           rules.RulesVersion,
-		MaxStrikes:             rules.MaxStrikes,
-		MaxBalls:               rules.MaxBalls,
-		MaxFouls:               rules.MaxFouls,
-		MaxInnings:             rules.MaxInnings,
-		MercyRunsPerInning:     rules.MercyRunsPerInning,
-		MercyAppliesLastInning: rules.MercyAppliesLastInning,
-		GameMercyRuns:          rules.GameMercyRuns,
-		Metadata:               rules.Metadata,
-	}
-
-	return responses.JsonResponse(http.StatusCreated, resp), nil
+	return responses.JsonResponse(http.StatusCreated, mappers.LeagueRulesToResponse(rules)), nil
 }
 
 func (h *LeagueRulesHandlers) GetLeagueRules(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -90,19 +67,5 @@ func (h *LeagueRulesHandlers) GetLeagueRules(ctx context.Context, req events.API
 		return *resp, nil
 	}
 
-	// map domain -> dto
-	respDto := dto.LeagueRulesResponse{
-		LeagueID:               rules.LeagueID,
-		RulesVersion:           rules.RulesVersion,
-		MaxStrikes:             rules.MaxStrikes,
-		MaxBalls:               rules.MaxBalls,
-		MaxFouls:               rules.MaxFouls,
-		MaxInnings:             rules.MaxInnings,
-		MercyRunsPerInning:     rules.MercyRunsPerInning,
-		MercyAppliesLastInning: rules.MercyAppliesLastInning,
-		GameMercyRuns:          rules.GameMercyRuns,
-		Metadata:               rules.Metadata,
-	}
-
-	return responses.JsonResponse(http.StatusOK, respDto), nil
+	return responses.JsonResponse(http.StatusOK, mappers.LeagueRulesToResponse(*rules)), nil
 }

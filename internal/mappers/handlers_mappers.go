@@ -126,6 +126,20 @@ func GameToResponse(g domain.Game) dto.GameResponse {
 	}
 }
 
+// CreateGameRequestToDomain converts a CreateGameRequest to a domain.Game with
+// the provided gameID and leagueID. State is left empty for the handler to
+// initialize after loading league rules.
+func CreateGameRequestToDomain(r dto.CreateGameRequest, gameID, leagueID string) domain.Game {
+	return domain.Game{
+		GameID:       gameID,
+		LeagueID:     leagueID,
+		RulesVersion: 1,
+		HomeTeamID:   r.HomeTeamID,
+		AwayTeamID:   r.AwayTeamID,
+		State:        domain.GameState{},
+	}
+}
+
 // TeamGame response
 func TeamGameToResponse(t domain.TeamGame) dto.TeamGameResponse {
 	return dto.TeamGameResponse{GameID: t.GameID, TeamID: t.TeamID, OpponentID: t.OpponentID, LeagueID: t.LeagueID, Date: t.Date}

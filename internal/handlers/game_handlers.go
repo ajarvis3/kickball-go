@@ -11,6 +11,7 @@ import (
 	"github.com/ajarvis3/kickball-go/internal/db"
 	"github.com/ajarvis3/kickball-go/internal/domain"
 	"github.com/ajarvis3/kickball-go/internal/handlers/dto"
+	"github.com/ajarvis3/kickball-go/internal/mappers"
 	"github.com/ajarvis3/kickball-go/pkg/responses"
 )
 
@@ -32,7 +33,7 @@ func (h *GameHandlers) CreateGame(ctx context.Context, req events.APIGatewayProx
 	if leagueID == "" || body.HomeTeamID == "" || body.AwayTeamID == "" {
 		return responses.JsonResponse(http.StatusBadRequest, map[string]string{"error": "leagueId, homeTeamId and awayTeamId are required"}), nil
 	}
-	game := domain.Game{GameID: uuid.NewString(), LeagueID: leagueID, RulesVersion: 1, HomeTeamID: body.HomeTeamID, AwayTeamID: body.AwayTeamID, State: domain.GameState{}}
+	game := mappers.CreateGameRequestToDomain(body, uuid.NewString(), leagueID)
 
 	// Load league rules to size inning runs and initialize state
 	lr, resp := fetchResource(func() (*domain.LeagueRules, error) { return h.Rules.GetLeagueRules(ctx, leagueID, game.RulesVersion) }, "league rules not found for rulesVersion")
@@ -56,8 +57,7 @@ func (h *GameHandlers) CreateGame(ctx context.Context, req events.APIGatewayProx
 	if err := h.Games.PutGame(ctx, game); err != nil {
 		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), nil
 	}
-	respDto := dto.GameResponse{GameID: game.GameID, LeagueID: game.LeagueID, HomeTeamID: game.HomeTeamID, AwayTeamID: game.AwayTeamID, RulesVersion: game.RulesVersion, State: dto.GameStateDTO{Inning: game.State.Inning, Half: game.State.Half, Outs: game.State.Outs, HomeScore: game.State.HomeScore, AwayScore: game.State.AwayScore}}
-	return responses.JsonResponse(http.StatusCreated, respDto), nil
+	return responses.JsonResponse(http.StatusCreated, mappers.GameToResponse(game)), nil
 }
 
 func (h *GameHandlers) GetGame(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -72,8 +72,7 @@ func (h *GameHandlers) GetGame(ctx context.Context, req events.APIGatewayProxyRe
 		if resp != nil {
 			return *resp, nil
 		}
-		respDto := dto.GameResponse{GameID: g.GameID, LeagueID: g.LeagueID, HomeTeamID: g.HomeTeamID, AwayTeamID: g.AwayTeamID, RulesVersion: g.RulesVersion, State: dto.GameStateDTO{Inning: g.State.Inning, Half: g.State.Half, Outs: g.State.Outs, HomeScore: g.State.HomeScore, AwayScore: g.State.AwayScore}}
-		return responses.JsonResponse(http.StatusOK, respDto), nil
+		return responses.JsonResponse(http.StatusOK, mappers.GameToResponse(*g)), nil
 	}
 
 	games, err := h.Games.ListGamesByLeague(ctx, leagueID)
@@ -82,7 +81,7 @@ func (h *GameHandlers) GetGame(ctx context.Context, req events.APIGatewayProxyRe
 	}
 	var out []dto.GameResponse
 	for _, g := range games {
-		out = append(out, dto.GameResponse{GameID: g.GameID, LeagueID: g.LeagueID, HomeTeamID: g.HomeTeamID, AwayTeamID: g.AwayTeamID, RulesVersion: g.RulesVersion, State: dto.GameStateDTO{Inning: g.State.Inning, Half: g.State.Half, Outs: g.State.Outs, HomeScore: g.State.HomeScore, AwayScore: g.State.AwayScore}})
+		out = append(out, mappers.GameToResponse(g))
 	}
 	return responses.JsonResponse(http.StatusOK, out), nil
 }
