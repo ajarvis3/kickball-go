@@ -32,10 +32,16 @@ func (e *GameEngine) ApplyAtBat(game domain.Game, rules domain.LeagueRules, atba
 		game.State.Inning = 1
 		game.State.Half = "top"
 		game.State.Outs = 0
-		game.State.InningRuns = []int{}
+		game.State.InningRuns = make([]int, 2*rules.MaxInnings)
 	}
 
 	res := strings.ToLower(strings.TrimSpace(atbat.Result))
+
+	// map inning/half -> index: (inning-1)*2 + (0 for top, 1 for bottom)
+	idx := (game.State.Inning - 1) * 2
+	if strings.ToLower(game.State.Half) == "bottom" {
+		idx += 1
+	}
 
 	// Score runs for hitting/walks/etc when RBI provided
 	switch res {
@@ -45,18 +51,6 @@ func (e *GameEngine) ApplyAtBat(game domain.Game, rules domain.LeagueRules, atba
 				game.State.HomeScore += atbat.RBI
 			} else {
 				game.State.AwayScore += atbat.RBI
-			}
-			// Ensure inning runs slice is long enough for current inning
-			idx := game.State.Inning - 1
-			if idx < 0 {
-				idx = 0
-			}
-			if len(game.State.InningRuns) <= idx {
-				// extend with zeros
-				needed := idx - len(game.State.InningRuns) + 1
-				for i := 0; i < needed; i++ {
-					game.State.InningRuns = append(game.State.InningRuns, 0)
-				}
 			}
 			game.State.InningRuns[idx] += atbat.RBI
 		}
@@ -74,7 +68,7 @@ func (e *GameEngine) ApplyAtBat(game domain.Game, rules domain.LeagueRules, atba
 
 	// Advance inning/half when outs reach 3 or more
 	for game.State.Outs >= 3 {
-		game.State.Outs -= 3
+		game.State.Outs = 0
 		if game.State.Half == "top" {
 			game.State.Half = "bottom"
 		} else {
@@ -83,10 +77,34 @@ func (e *GameEngine) ApplyAtBat(game domain.Game, rules domain.LeagueRules, atba
 		}
 	}
 
+	// Innings mercy rule check
+	if rules.MercyAppliesLastInning || !rules.MercyAppliesLastInning && game.State.Inning == rules.MaxInnings {
+		// If mercy rule triggered then we adjust the runs to match the mercy rule
+		// Then progress to the next inning
+		if game.State.InningRuns[idx] >= rules.MercyRunsPerInning {
+			adjustedRuns := game.State.InningRuns[idx] - rules.MercyRunsPerInning
+			if atbat.TeamID == game.HomeTeamID {
+				game.State.HomeScore -= adjustedRuns
+			} else {
+				game.State.AwayScore -= adjustedRuns
+			}
+			game.State.InningRuns[idx] = rules.MercyRunsPerInning
+			game.State.Outs = 0
+			if game.State.Half == "top" {
+				game.State.Half = "bottom"
+			} else {
+				game.State.Half = "top"
+				game.State.Inning += 1
+			}
+		}
+	}
+
 	// Basic mercy rule check (game-level)
-	if rules.GameMercyRuns > 0 && (rules.MercyAppliesLastInning || !rules.MercyAppliesLastInning && game.State.Inning == rules.MaxInnings) {
+	if rules.GameMercyRuns > 0 {
 		if game.State.HomeScore-game.State.AwayScore >= rules.GameMercyRuns || game.State.AwayScore-game.State.HomeScore >= rules.GameMercyRuns {
-			// For now, we simply leave scores as-is; higher-level callers may treat games past mercy as finished.
+			game.State.Inning = rules.MaxInnings + 1
+			game.State.Outs = 0
+			game.State.Half = ""
 		}
 	}
 
