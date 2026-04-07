@@ -5,6 +5,7 @@ import (
 
 	"github.com/ajarvis3/kickball-go/internal/domain"
 	"github.com/ajarvis3/kickball-go/internal/keys"
+	"github.com/ajarvis3/kickball-go/internal/mappers"
 	"github.com/ajarvis3/kickball-go/internal/storage"
 	"github.com/ajarvis3/kickball-go/pkg/apperrors"
 
@@ -31,7 +32,7 @@ func NewAtBatRepository(client *Client) AtBatRepository {
 
 func (r *atBatRepo) PutAtBat(ctx context.Context, atbat domain.AtBat) error {
 	// Convert domain to storage item
-	it := storage.AtbatToItem(atbat)
+	it := mappers.AtbatToItem(atbat)
 
 	// Marshal the item
 	item, err := attributevalue.MarshalMap(it)
@@ -53,8 +54,8 @@ func (r *atBatRepo) PutAtBat(ctx context.Context, atbat domain.AtBat) error {
 
 func (r *atBatRepo) PutAtBatAndUpdateGame(ctx context.Context, atbat domain.AtBat, updatedGame domain.Game) error {
 	// Convert domain to storage items
-	atItem := storage.AtbatToItem(atbat)
-	gItem := storage.GameToItem(updatedGame)
+	atItem := mappers.AtbatToItem(atbat)
+	gItem := mappers.GameToItem(updatedGame)
 
 	atMap, err := attributevalue.MarshalMap(atItem)
 	if err != nil {
@@ -108,7 +109,7 @@ func (r *atBatRepo) ListAtBatsByGame(ctx context.Context, gameID string) ([]doma
 		if err := attributevalue.UnmarshalMap(it, &stored); err != nil {
 			return nil, err
 		}
-		outAt = append(outAt, storage.ItemToAtbat(stored))
+		outAt = append(outAt, mappers.ItemToAtbat(stored))
 	}
 	if len(outAt) == 0 {
 		return nil, apperrors.ErrNotFound
@@ -138,7 +139,7 @@ func (r *atBatRepo) ListAtBatsByPlayer(ctx context.Context, playerID string) ([]
 		if err := attributevalue.UnmarshalMap(it, &stored); err != nil {
 			return nil, err
 		}
-		outAt = append(outAt, storage.ItemToAtbat(stored))
+		outAt = append(outAt, mappers.ItemToAtbat(stored))
 	}
 	if len(outAt) == 0 {
 		return nil, apperrors.ErrNotFound

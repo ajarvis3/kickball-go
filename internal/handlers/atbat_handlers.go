@@ -10,6 +10,7 @@ import (
 	"github.com/ajarvis3/kickball-go/internal/db"
 	"github.com/ajarvis3/kickball-go/internal/domain"
 	"github.com/ajarvis3/kickball-go/internal/handlers/dto"
+	"github.com/ajarvis3/kickball-go/internal/mappers"
 	"github.com/ajarvis3/kickball-go/internal/services"
 	"github.com/ajarvis3/kickball-go/pkg/responses"
 )
@@ -35,7 +36,7 @@ func (h *AtBatHandlers) RecordAtBat(ctx context.Context, req events.APIGatewayPr
 	if gameID == "" || body.PlayerID == "" {
 		return responses.JsonResponse(http.StatusBadRequest, map[string]string{"error": "gameId and playerId are required"}), nil
 	}
-	atbat := domain.AtBat{GameID: gameID, LeagueID: leagueID, TeamID: body.TeamID, PlayerID: body.PlayerID, Seq: 1, Inning: 0, Half: "", Strikes: body.Strikes, Balls: body.Balls, Fouls: body.Fouls, Result: body.Result, RBI: body.RBI, Pitches: body.Pitches}
+	atbat := mappers.RecordAtBatRequestToDomain(body, gameID, leagueID)
 
 	// Load current game
 	g, err := h.Games.GetGame(ctx, gameID)
@@ -66,8 +67,7 @@ func (h *AtBatHandlers) RecordAtBat(ctx context.Context, req events.APIGatewayPr
 		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), nil
 	}
 
-	resp := dto.AtBatResponse{GameID: atbat.GameID, PlayerID: atbat.PlayerID, TeamID: atbat.TeamID, Seq: atbat.Seq, Inning: atbat.Inning, Half: atbat.Half, Strikes: atbat.Strikes, Balls: atbat.Balls, Fouls: atbat.Fouls, Result: atbat.Result, RBI: atbat.RBI, Pitches: atbat.Pitches}
-	return responses.JsonResponse(http.StatusCreated, resp), nil
+	return responses.JsonResponse(http.StatusCreated, mappers.AtBatToResponse(atbat)), nil
 }
 
 func (h *AtBatHandlers) GetAtBats(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -94,7 +94,7 @@ func (h *AtBatHandlers) GetAtBats(ctx context.Context, req events.APIGatewayProx
 
 	var resp []dto.AtBatResponse
 	for _, a := range atbats {
-		resp = append(resp, dto.AtBatResponse{GameID: a.GameID, PlayerID: a.PlayerID, TeamID: a.TeamID, Seq: a.Seq, Inning: a.Inning, Half: a.Half, Strikes: a.Strikes, Balls: a.Balls, Fouls: a.Fouls, Result: a.Result, RBI: a.RBI, Pitches: a.Pitches})
+		resp = append(resp, mappers.AtBatToResponse(a))
 	}
 
 	return responses.JsonResponse(http.StatusOK, resp), nil

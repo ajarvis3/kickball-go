@@ -5,6 +5,7 @@ import (
 
 	"github.com/ajarvis3/kickball-go/internal/domain"
 	"github.com/ajarvis3/kickball-go/internal/keys"
+	"github.com/ajarvis3/kickball-go/internal/mappers"
 	"github.com/ajarvis3/kickball-go/internal/storage"
 	"github.com/ajarvis3/kickball-go/pkg/apperrors"
 
@@ -30,7 +31,7 @@ func NewGameRepository(client *Client) GameRepository {
 
 func (r *gameRepo) PutGame(ctx context.Context, game domain.Game) error {
 	// Convert domain -> storage item
-	it := storage.GameToItem(game)
+	it := mappers.GameToItem(game)
 
 	// Marshal the item
 	item, err := attributevalue.MarshalMap(it)
@@ -65,7 +66,7 @@ func (r *gameRepo) GetGame(ctx context.Context, gameID string) (*domain.Game, er
 	if err := attributevalue.UnmarshalMap(out.Item, &stored); err != nil {
 		return nil, err
 	}
-	g := storage.ItemToGame(stored)
+	g := mappers.ItemToGame(stored)
 	return &g, nil
 }
 
@@ -90,7 +91,7 @@ func (r *gameRepo) ListGamesByLeague(ctx context.Context, leagueID string) ([]do
 		if err := attributevalue.UnmarshalMap(it, &stored); err != nil {
 			return nil, err
 		}
-		games = append(games, storage.ItemToGame(stored))
+		games = append(games, mappers.ItemToGame(stored))
 	}
 	return games, nil
 }

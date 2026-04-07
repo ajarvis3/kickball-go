@@ -8,6 +8,7 @@ import (
 
 	"github.com/ajarvis3/kickball-go/internal/domain"
 	"github.com/ajarvis3/kickball-go/internal/keys"
+	"github.com/ajarvis3/kickball-go/internal/mappers"
 	"github.com/ajarvis3/kickball-go/internal/storage"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -30,7 +31,7 @@ func NewLeagueRepository(client *Client) LeagueRepository {
 }
 
 func (r *leagueRepo) PutLeague(ctx context.Context, league domain.League) error {
-	it := storage.LeagueToItem(league)
+	it := mappers.LeagueToItem(league)
 	item, err := attributevalue.MarshalMap(it)
 	if err != nil {
 		return err
@@ -73,6 +74,6 @@ func (r *leagueRepo) GetLeague(ctx context.Context, leagueID string) (*domain.Le
 	if err := attributevalue.UnmarshalMap(out.Item, &stored); err != nil {
 		return nil, err
 	}
-	l := storage.ItemToLeague(stored)
+	l := mappers.ItemToLeague(stored)
 	return &l, nil
 }

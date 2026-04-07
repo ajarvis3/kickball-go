@@ -5,6 +5,7 @@ import (
 
 	"github.com/ajarvis3/kickball-go/internal/domain"
 	"github.com/ajarvis3/kickball-go/internal/keys"
+	"github.com/ajarvis3/kickball-go/internal/mappers"
 	"github.com/ajarvis3/kickball-go/internal/storage"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -27,7 +28,7 @@ func NewPlayerRepository(client *Client) PlayerRepository {
 }
 
 func (r *playerRepo) PutPlayer(ctx context.Context, player domain.Player) error {
-	it := storage.PlayerToItem(player)
+	it := mappers.PlayerToItem(player)
 
 	item, err := attributevalue.MarshalMap(it)
 	if err != nil {
@@ -65,7 +66,7 @@ func (r *playerRepo) ListPlayersByTeam(ctx context.Context, teamID string) ([]do
 		if err := attributevalue.UnmarshalMap(it, &stored); err != nil {
 			return nil, err
 		}
-		players = append(players, storage.ItemToPlayer(stored))
+		players = append(players, mappers.ItemToPlayer(stored))
 	}
 	return players, nil
 }
