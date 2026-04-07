@@ -50,7 +50,7 @@ func (e *GameEngine) ApplyAtBat(game domain.Game, rules domain.LeagueRules, atba
 	}
 
 	// Innings mercy rule check (rules apply AND inning runs exceed mercy threshold)
-	if doesInningMercyApply(rules, game, idx) {
+	if e.Rules.DoesInningMercyApply(rules, game, idx) {
 		adjustedRuns := game.State.InningRuns[idx] - rules.MercyRunsPerInning
 		if atbat.TeamID == game.HomeTeamID {
 			game.State.HomeScore -= adjustedRuns
@@ -123,13 +123,7 @@ func isRBIResult(res string) bool {
 
 // doesInningMercyApply returns true when the mercy rule should be checked
 // for the current inning according to the league rules.
-func doesInningMercyApply(rules domain.LeagueRules, game domain.Game, idx int) bool {
-	applies := rules.MercyAppliesLastInning || (!rules.MercyAppliesLastInning && game.State.Inning == rules.MaxInnings)
-	if !applies {
-		return false
-	}
-	return game.State.InningRuns[idx] >= rules.MercyRunsPerInning
-}
+// (was moved to RulesEngine)
 
 // applyOuts increments the game's outs according to result
 func applyOuts(g *domain.Game, res string) {

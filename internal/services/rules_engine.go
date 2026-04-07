@@ -27,3 +27,16 @@ func (e *RulesEngine) ValidateAtBat(game domain.Game, rules domain.LeagueRules, 
 
 	return nil
 }
+
+// DoesInningMercyApply returns true when the mercy rule should be checked
+// for the current inning according to the league rules.
+func (e *RulesEngine) DoesInningMercyApply(rules domain.LeagueRules, game domain.Game, idx int) bool {
+	applies := rules.MercyAppliesLastInning || (!rules.MercyAppliesLastInning && game.State.Inning == rules.MaxInnings)
+	if !applies {
+		return false
+	}
+	if idx < 0 || idx >= len(game.State.InningRuns) {
+		return false
+	}
+	return game.State.InningRuns[idx] >= rules.MercyRunsPerInning
+}
