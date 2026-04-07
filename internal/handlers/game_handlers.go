@@ -37,7 +37,7 @@ func (h *GameHandlers) CreateGame(ctx context.Context, req events.APIGatewayProx
 	// Load league rules to size inning runs and initialize state
 	lr, err := h.Rules.GetLeagueRules(ctx, leagueID, game.RulesVersion)
 	if err != nil {
-		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), err
+		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), nil
 	}
 	if lr == nil {
 		return responses.JsonResponse(http.StatusBadRequest, map[string]string{"error": "league rules not found for rulesVersion"}), nil
@@ -53,7 +53,7 @@ func (h *GameHandlers) CreateGame(ctx context.Context, req events.APIGatewayProx
 	}
 
 	if err := h.Games.PutGame(ctx, game); err != nil {
-		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), err
+		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), nil
 	}
 	resp := dto.GameResponse{GameID: game.GameID, LeagueID: game.LeagueID, HomeTeamID: game.HomeTeamID, AwayTeamID: game.AwayTeamID, RulesVersion: game.RulesVersion, State: dto.GameStateDTO{Inning: game.State.Inning, Half: game.State.Half, Outs: game.State.Outs, HomeScore: game.State.HomeScore, AwayScore: game.State.AwayScore}}
 	return responses.JsonResponse(http.StatusCreated, resp), nil
@@ -69,7 +69,7 @@ func (h *GameHandlers) GetGame(ctx context.Context, req events.APIGatewayProxyRe
 	if gameID != "" {
 		g, err := h.Games.GetGame(ctx, gameID)
 		if err != nil {
-			return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), err
+			return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), nil
 		}
 		if g == nil {
 			return responses.JsonResponse(http.StatusNotFound, map[string]string{"error": "game not found"}), nil
@@ -80,7 +80,7 @@ func (h *GameHandlers) GetGame(ctx context.Context, req events.APIGatewayProxyRe
 
 	games, err := h.Games.ListGamesByLeague(ctx, leagueID)
 	if err != nil {
-		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), err
+		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), nil
 	}
 	var out []dto.GameResponse
 	for _, g := range games {

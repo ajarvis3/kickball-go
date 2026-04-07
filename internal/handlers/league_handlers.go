@@ -38,7 +38,7 @@ func (h *LeagueHandlers) CreateLeague(ctx context.Context, req events.APIGateway
 	}
 	err := h.Leagues.PutLeague(ctx, league)
 	if err != nil {
-		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), err
+		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), nil
 	}
 	resp := dto.LeagueResponse{
 		LeagueID:            league.LeagueID,
@@ -55,7 +55,7 @@ func (h *LeagueHandlers) GetLeague(ctx context.Context, req events.APIGatewayPro
 	}
 	lg, err := h.Leagues.GetLeague(ctx, leagueID)
 	if err != nil {
-		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), err
+		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), nil
 	}
 	if lg == nil {
 		return responses.JsonResponse(http.StatusNotFound, map[string]string{"error": "league not found"}), nil

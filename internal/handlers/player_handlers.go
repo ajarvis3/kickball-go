@@ -34,7 +34,7 @@ func (h *PlayerHandlers) CreatePlayer(ctx context.Context, req events.APIGateway
 	}
 	player := domain.Player{PlayerID: uuid.NewString(), TeamID: teamID, LeagueID: leagueID, Name: body.Name, Number: body.Number, Position: body.Position}
 	if err := h.Players.PutPlayer(ctx, player); err != nil {
-		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), err
+		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), nil
 	}
 	resp := dto.PlayerResponse{PlayerID: player.PlayerID, TeamID: player.TeamID, LeagueID: player.LeagueID, Name: player.Name, Number: player.Number, Position: player.Position}
 	return responses.JsonResponse(http.StatusCreated, resp), nil
@@ -47,7 +47,7 @@ func (h *PlayerHandlers) GetPlayers(ctx context.Context, req events.APIGatewayPr
 	}
 	players, err := h.Players.ListPlayersByTeam(ctx, teamID)
 	if err != nil {
-		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), err
+		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), nil
 	}
 	var out []dto.PlayerResponse
 	for _, p := range players {

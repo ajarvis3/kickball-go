@@ -53,7 +53,7 @@ func (h *LeagueRulesHandlers) CreateLeagueRules(ctx context.Context, req events.
 	}
 
 	if err := h.Rules.PutLeagueRules(ctx, rules); err != nil {
-		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), err
+		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), nil
 	}
 
 	resp := dto.LeagueRulesResponse{
@@ -87,7 +87,7 @@ func (h *LeagueRulesHandlers) GetLeagueRules(ctx context.Context, req events.API
 
 	rules, err := h.Rules.GetLeagueRules(ctx, leagueID, v)
 	if err != nil {
-		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), err
+		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), nil
 	}
 	if rules == nil {
 		return responses.JsonResponse(http.StatusNotFound, map[string]string{"error": "league rules not found"}), nil

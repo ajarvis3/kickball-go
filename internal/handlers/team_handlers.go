@@ -33,7 +33,7 @@ func (h *TeamHandlers) CreateTeam(ctx context.Context, req events.APIGatewayProx
 	}
 	team := domain.Team{TeamID: uuid.NewString(), LeagueID: leagueID, Name: body.Name}
 	if err := h.Teams.PutTeam(ctx, team); err != nil {
-		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), err
+		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), nil
 	}
 	resp := dto.TeamResponse{TeamID: team.TeamID, LeagueID: team.LeagueID, Name: team.Name}
 	return responses.JsonResponse(http.StatusCreated, resp), nil
@@ -46,7 +46,7 @@ func (h *TeamHandlers) GetTeams(ctx context.Context, req events.APIGatewayProxyR
 	}
 	teams, err := h.Teams.ListTeamsByLeague(ctx, leagueID)
 	if err != nil {
-		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), err
+		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), nil
 	}
 	var out []dto.TeamResponse
 	for _, t := range teams {

@@ -40,7 +40,7 @@ func (h *AtBatHandlers) RecordAtBat(ctx context.Context, req events.APIGatewayPr
 	// Load current game
 	g, err := h.Games.GetGame(ctx, gameID)
 	if err != nil {
-		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), err
+		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), nil
 	}
 	if g == nil {
 		return responses.JsonResponse(http.StatusNotFound, map[string]string{"error": "game not found"}), nil
@@ -49,7 +49,7 @@ func (h *AtBatHandlers) RecordAtBat(ctx context.Context, req events.APIGatewayPr
 	// Load league rules for the game's rules version
 	lr, err := h.Rules.GetLeagueRules(ctx, leagueID, g.RulesVersion)
 	if err != nil {
-		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), err
+		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), nil
 	}
 	if lr == nil {
 		return responses.JsonResponse(http.StatusNotFound, map[string]string{"error": "league rules not found"}), nil
@@ -63,7 +63,7 @@ func (h *AtBatHandlers) RecordAtBat(ctx context.Context, req events.APIGatewayPr
 
 	// Persist at-bat and updated game transactionally
 	if err := h.AtBats.PutAtBatAndUpdateGame(ctx, atbat, updatedGame); err != nil {
-		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), err
+		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), nil
 	}
 
 	resp := dto.AtBatResponse{GameID: atbat.GameID, PlayerID: atbat.PlayerID, TeamID: atbat.TeamID, Seq: atbat.Seq, Inning: atbat.Inning, Half: atbat.Half, Strikes: atbat.Strikes, Balls: atbat.Balls, Fouls: atbat.Fouls, Result: atbat.Result, RBI: atbat.RBI, Pitches: atbat.Pitches}
@@ -89,7 +89,7 @@ func (h *AtBatHandlers) GetAtBats(ctx context.Context, req events.APIGatewayProx
 		atbats, err = h.AtBats.ListAtBatsByPlayer(ctx, playerID)
 	}
 	if err != nil {
-		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), err
+		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), nil
 	}
 
 	var resp []dto.AtBatResponse
