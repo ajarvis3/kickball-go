@@ -16,10 +16,11 @@ import (
 
 type GameHandlers struct {
 	Games db.GameRepository
+	Rules db.LeagueRulesRepository
 }
 
-func NewGameHandlers(games db.GameRepository) *GameHandlers {
-	return &GameHandlers{Games: games}
+func NewGameHandlers(games db.GameRepository, rules db.LeagueRulesRepository) *GameHandlers {
+	return &GameHandlers{Games: games, Rules: rules}
 }
 
 func (h *GameHandlers) CreateGame(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -32,6 +33,25 @@ func (h *GameHandlers) CreateGame(ctx context.Context, req events.APIGatewayProx
 		return responses.JsonResponse(http.StatusBadRequest, map[string]string{"error": "leagueId, homeTeamId and awayTeamId are required"}), nil
 	}
 	game := domain.Game{GameID: uuid.NewString(), LeagueID: leagueID, RulesVersion: 1, HomeTeamID: body.HomeTeamID, AwayTeamID: body.AwayTeamID, State: domain.GameState{}}
+
+	// Load league rules to size inning runs and initialize state
+	lr, err := h.Rules.GetLeagueRules(ctx, leagueID, game.RulesVersion)
+	if err != nil {
+		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), err
+	}
+	if lr == nil {
+		return responses.JsonResponse(http.StatusBadRequest, map[string]string{"error": "league rules not found for rulesVersion"}), nil
+	}
+
+	game.State.Inning = 1
+	game.State.Half = "top"
+	game.State.Outs = 0
+	if lr.MaxInnings > 0 {
+		game.State.InningRuns = make([]int, 2*lr.MaxInnings)
+	} else {
+		game.State.InningRuns = []int{}
+	}
+
 	if err := h.Games.PutGame(ctx, game); err != nil {
 		return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), err
 	}

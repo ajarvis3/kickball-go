@@ -12,6 +12,7 @@ import (
 
 	"github.com/ajarvis3/kickball-go/internal/db"
 	"github.com/ajarvis3/kickball-go/internal/handlers"
+	"github.com/ajarvis3/kickball-go/internal/services"
 )
 
 var (
@@ -47,9 +48,13 @@ func init() {
 	playerRepo := db.NewPlayerRepository(dynamoClient)
 	leagueRulesRepo := db.NewLeagueRulesRepository(dynamoClient)
 
+	// Construct services
+	rulesEngine := services.NewRulesEngine()
+	gameEngine := services.NewGameEngine(rulesEngine)
+
 	// Construct handlers
-	atBatHandler = handlers.NewAtBatHandlers(atBatRepo)
-	gameHandler = handlers.NewGameHandlers(gameRepo)
+	atBatHandler = handlers.NewAtBatHandlers(atBatRepo, gameRepo, leagueRulesRepo, gameEngine)
+	gameHandler = handlers.NewGameHandlers(gameRepo, leagueRulesRepo)
 	teamHandler = handlers.NewTeamHandlers(teamRepo)
 	leagueHandler = handlers.NewLeagueHandlers(leagueRepo)
 	playerHandler = handlers.NewPlayerHandlers(playerRepo)

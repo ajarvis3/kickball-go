@@ -16,6 +16,7 @@ import (
 
 type AtBatRepository interface {
 	PutAtBat(ctx context.Context, atbat domain.AtBat) error
+	PutAtBatAndUpdateGame(ctx context.Context, atbat domain.AtBat, updatedGame domain.Game) error
 	ListAtBatsByGame(ctx context.Context, gameID string) ([]domain.AtBat, error)
 	ListAtBatsByPlayer(ctx context.Context, playerID string) ([]domain.AtBat, error)
 }
@@ -47,6 +48,43 @@ func (r *atBatRepo) PutAtBat(ctx context.Context, atbat domain.AtBat) error {
 		return err
 	}
 
+	return nil
+}
+
+func (r *atBatRepo) PutAtBatAndUpdateGame(ctx context.Context, atbat domain.AtBat, updatedGame domain.Game) error {
+	// Convert domain to storage items
+	atItem := storage.AtbatToItem(atbat)
+	gItem := storage.GameToItem(updatedGame)
+
+	atMap, err := attributevalue.MarshalMap(atItem)
+	if err != nil {
+		return err
+	}
+	gMap, err := attributevalue.MarshalMap(gItem)
+	if err != nil {
+		return err
+	}
+
+	// Build transactional write: put atbat, put game
+	txItems := []types.TransactWriteItem{
+		{
+			Put: &types.Put{
+				TableName: aws.String(r.client.tableName),
+				Item:      atMap,
+			},
+		},
+		{
+			Put: &types.Put{
+				TableName: aws.String(r.client.tableName),
+				Item:      gMap,
+			},
+		},
+	}
+
+	_, err = r.client.ddb.TransactWriteItems(ctx, &dynamodb.TransactWriteItemsInput{TransactItems: txItems})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

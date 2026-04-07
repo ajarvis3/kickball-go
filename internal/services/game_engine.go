@@ -27,13 +27,8 @@ func (e *GameEngine) ApplyAtBat(game domain.Game, rules domain.LeagueRules, atba
 		return game, err
 	}
 
-	// Initialize inning/half if not started
-	if game.State.Inning == 0 {
-		game.State.Inning = 1
-		game.State.Half = "top"
-		game.State.Outs = 0
-		game.State.InningRuns = make([]int, 2*rules.MaxInnings)
-	}
+	// Game initialization (inning/half/runs) is handled at game creation.
+	// ApplyAtBat assumes game.State has been initialized by the creator.
 
 	res := strings.ToLower(strings.TrimSpace(atbat.Result))
 
@@ -43,60 +38,28 @@ func (e *GameEngine) ApplyAtBat(game domain.Game, rules domain.LeagueRules, atba
 		idx += 1
 	}
 
-	// Score runs for hitting/walks/etc when RBI provided
-	switch res {
-	case "single", "double", "triple", "homerun", "walk", "sacrifice", "error", "fielderschoice":
-		if atbat.RBI > 0 {
-			if atbat.TeamID == game.HomeTeamID {
-				game.State.HomeScore += atbat.RBI
-			} else {
-				game.State.AwayScore += atbat.RBI
-			}
-			game.State.InningRuns[idx] += atbat.RBI
-		}
-	}
+	// Apply runs (RBI) for the at-bat
+	applyRBI(&game, atbat, idx)
 
-	// Handle outs
-	switch res {
-	case "out", "strikeout":
-		game.State.Outs += 1
-	case "doubleplay":
-		game.State.Outs += 2
-	case "tripleplay":
-		game.State.Outs += 3
-	}
+	// Apply outs for the at-bat
+	applyOuts(&game, res)
 
 	// Advance inning/half when outs reach 3 or more
 	for game.State.Outs >= 3 {
-		game.State.Outs = 0
-		if game.State.Half == "top" {
-			game.State.Half = "bottom"
-		} else {
-			game.State.Half = "top"
-			game.State.Inning += 1
-		}
+		advanceInning(&game)
 	}
 
-	// Innings mercy rule check
-	if rules.MercyAppliesLastInning || !rules.MercyAppliesLastInning && game.State.Inning == rules.MaxInnings {
-		// If mercy rule triggered then we adjust the runs to match the mercy rule
-		// Then progress to the next inning
-		if game.State.InningRuns[idx] >= rules.MercyRunsPerInning {
-			adjustedRuns := game.State.InningRuns[idx] - rules.MercyRunsPerInning
-			if atbat.TeamID == game.HomeTeamID {
-				game.State.HomeScore -= adjustedRuns
-			} else {
-				game.State.AwayScore -= adjustedRuns
-			}
-			game.State.InningRuns[idx] = rules.MercyRunsPerInning
-			game.State.Outs = 0
-			if game.State.Half == "top" {
-				game.State.Half = "bottom"
-			} else {
-				game.State.Half = "top"
-				game.State.Inning += 1
-			}
+	// Innings mercy rule check (rules apply AND inning runs exceed mercy threshold)
+	if doesInningMercyApply(rules, game, idx) {
+		adjustedRuns := game.State.InningRuns[idx] - rules.MercyRunsPerInning
+		if atbat.TeamID == game.HomeTeamID {
+			game.State.HomeScore -= adjustedRuns
+		} else {
+			game.State.AwayScore -= adjustedRuns
 		}
+		game.State.InningRuns[idx] = rules.MercyRunsPerInning
+		// reset outs and advance half/inning
+		advanceInning(&game)
 	}
 
 	// Basic mercy rule check (game-level)
@@ -109,4 +72,73 @@ func (e *GameEngine) ApplyAtBat(game domain.Game, rules domain.LeagueRules, atba
 	}
 
 	return game, nil
+}
+
+// advanceInning resets outs and advances the half/inning on the provided game.
+// It's unexported and intended for use only within this file.
+func advanceInning(g *domain.Game) {
+	if g == nil {
+		return
+	}
+	g.State.Outs = 0
+	if g.State.Half == "top" {
+		g.State.Half = "bottom"
+	} else {
+		g.State.Half = "top"
+		g.State.Inning += 1
+	}
+}
+
+// applyRBI updates scores and inning runs for at-bats that produce RBI.
+// It is unexported and used only within this file.
+func applyRBI(g *domain.Game, atbat domain.AtBat, idx int) {
+	res := strings.ToLower(strings.TrimSpace(atbat.Result))
+	if isRBIResult(res) && atbat.RBI > 0 {
+		if atbat.TeamID == g.HomeTeamID {
+			g.State.HomeScore += atbat.RBI
+		} else {
+			g.State.AwayScore += atbat.RBI
+		}
+		if idx >= 0 && idx < len(g.State.InningRuns) {
+			g.State.InningRuns[idx] += atbat.RBI
+		}
+	}
+}
+
+var rbiResults = map[string]struct{}{
+	"single":         {},
+	"double":         {},
+	"triple":         {},
+	"homerun":        {},
+	"walk":           {},
+	"sacrifice":      {},
+	"error":          {},
+	"fielderschoice": {},
+}
+
+func isRBIResult(res string) bool {
+	_, ok := rbiResults[res]
+	return ok
+}
+
+// doesInningMercyApply returns true when the mercy rule should be checked
+// for the current inning according to the league rules.
+func doesInningMercyApply(rules domain.LeagueRules, game domain.Game, idx int) bool {
+	applies := rules.MercyAppliesLastInning || (!rules.MercyAppliesLastInning && game.State.Inning == rules.MaxInnings)
+	if !applies {
+		return false
+	}
+	return game.State.InningRuns[idx] >= rules.MercyRunsPerInning
+}
+
+// applyOuts increments the game's outs according to result
+func applyOuts(g *domain.Game, res string) {
+	switch res {
+	case "out", "strikeout":
+		g.State.Outs += 1
+	case "doubleplay":
+		g.State.Outs += 2
+	case "tripleplay":
+		g.State.Outs += 3
+	}
 }
