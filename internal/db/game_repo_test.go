@@ -41,7 +41,7 @@ func newGameClient(ddb DynamoDBAPI) *Client {
 	return NewClient(ddb, "test-table")
 }
 
-func TestPutGame_Success(t *testing.T) {
+func TestPutGameSuccess(t *testing.T) {
 	ddb := &mockDynamoDB{
 		putItemFn: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 			return &dynamodb.PutItemOutput{}, nil
@@ -54,7 +54,7 @@ func TestPutGame_Success(t *testing.T) {
 	}
 }
 
-func TestPutGame_Error(t *testing.T) {
+func TestPutGameError(t *testing.T) {
 	ddb := &mockDynamoDB{
 		putItemFn: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 			return nil, errors.New("put error")
@@ -67,7 +67,7 @@ func TestPutGame_Error(t *testing.T) {
 	}
 }
 
-func TestGetGame_Success(t *testing.T) {
+func TestGetGameSuccess(t *testing.T) {
 	it := storage.GameItem{
 		GameID:   "g1",
 		LeagueID: "l1",
@@ -89,7 +89,7 @@ func TestGetGame_Success(t *testing.T) {
 	}
 }
 
-func TestGetGame_NotFound(t *testing.T) {
+func TestGetGameNotFound(t *testing.T) {
 	ddb := &mockDynamoDB{
 		getItemFn: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 			return &dynamodb.GetItemOutput{Item: nil}, nil
@@ -102,7 +102,7 @@ func TestGetGame_NotFound(t *testing.T) {
 	}
 }
 
-func TestGetGame_Error(t *testing.T) {
+func TestGetGameError(t *testing.T) {
 	ddb := &mockDynamoDB{
 		getItemFn: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 			return nil, errors.New("get error")
@@ -115,7 +115,7 @@ func TestGetGame_Error(t *testing.T) {
 	}
 }
 
-func TestListGamesByLeague_Success(t *testing.T) {
+func TestListGamesByLeagueSuccess(t *testing.T) {
 	it := storage.GameItem{GameID: "g1", LeagueID: "l1"}
 	item, _ := attributevalue.MarshalMap(it)
 	ddb := &mockDynamoDB{
@@ -133,7 +133,7 @@ func TestListGamesByLeague_Success(t *testing.T) {
 	}
 }
 
-func TestListGamesByLeague_Error(t *testing.T) {
+func TestListGamesByLeagueError(t *testing.T) {
 	ddb := &mockDynamoDB{
 		queryFn: func(_ context.Context, _ *dynamodb.QueryInput, _ ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 			return nil, errors.New("query error")

@@ -18,7 +18,7 @@ func newAtBatClient(ddb DynamoDBAPI) *Client {
 	return NewClient(ddb, "test-table")
 }
 
-func TestPutAtBat_Success(t *testing.T) {
+func TestPutAtBatSuccess(t *testing.T) {
 	ddb := &mockDynamoDB{
 		putItemFn: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 			return &dynamodb.PutItemOutput{}, nil
@@ -31,7 +31,7 @@ func TestPutAtBat_Success(t *testing.T) {
 	}
 }
 
-func TestPutAtBat_Error(t *testing.T) {
+func TestPutAtBatError(t *testing.T) {
 	ddb := &mockDynamoDB{
 		putItemFn: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 			return nil, errors.New("put error")
@@ -44,7 +44,7 @@ func TestPutAtBat_Error(t *testing.T) {
 	}
 }
 
-func TestPutAtBatAndUpdateGame_Success(t *testing.T) {
+func TestPutAtBatAndUpdateGameSuccess(t *testing.T) {
 	ddb := &mockDynamoDB{
 		transactWriteItemsFn: func(_ context.Context, _ *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
 			return &dynamodb.TransactWriteItemsOutput{}, nil
@@ -57,7 +57,7 @@ func TestPutAtBatAndUpdateGame_Success(t *testing.T) {
 	}
 }
 
-func TestPutAtBatAndUpdateGame_Error(t *testing.T) {
+func TestPutAtBatAndUpdateGameError(t *testing.T) {
 	ddb := &mockDynamoDB{
 		transactWriteItemsFn: func(_ context.Context, _ *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
 			return nil, errors.New("tx error")
@@ -70,7 +70,7 @@ func TestPutAtBatAndUpdateGame_Error(t *testing.T) {
 	}
 }
 
-func TestListAtBatsByGame_Success(t *testing.T) {
+func TestListAtBatsByGameSuccess(t *testing.T) {
 	it := storage.AtbatItem{GameID: "g1", PlayerID: "p1", Seq: 1}
 	item, _ := attributevalue.MarshalMap(it)
 	ddb := &mockDynamoDB{
@@ -88,7 +88,7 @@ func TestListAtBatsByGame_Success(t *testing.T) {
 	}
 }
 
-func TestListAtBatsByGame_Empty(t *testing.T) {
+func TestListAtBatsByGameEmpty(t *testing.T) {
 	ddb := &mockDynamoDB{
 		queryFn: func(_ context.Context, _ *dynamodb.QueryInput, _ ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 			return &dynamodb.QueryOutput{Items: []map[string]types.AttributeValue{}}, nil
@@ -101,7 +101,7 @@ func TestListAtBatsByGame_Empty(t *testing.T) {
 	}
 }
 
-func TestListAtBatsByGame_Error(t *testing.T) {
+func TestListAtBatsByGameError(t *testing.T) {
 	ddb := &mockDynamoDB{
 		queryFn: func(_ context.Context, _ *dynamodb.QueryInput, _ ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 			return nil, errors.New("query error")
@@ -114,7 +114,7 @@ func TestListAtBatsByGame_Error(t *testing.T) {
 	}
 }
 
-func TestListAtBatsByPlayer_Success(t *testing.T) {
+func TestListAtBatsByPlayerSuccess(t *testing.T) {
 	it := storage.AtbatItem{GameID: "g1", PlayerID: "p1", Seq: 1}
 	item, _ := attributevalue.MarshalMap(it)
 	ddb := &mockDynamoDB{
@@ -132,7 +132,7 @@ func TestListAtBatsByPlayer_Success(t *testing.T) {
 	}
 }
 
-func TestListAtBatsByPlayer_Empty(t *testing.T) {
+func TestListAtBatsByPlayerEmpty(t *testing.T) {
 	ddb := &mockDynamoDB{
 		queryFn: func(_ context.Context, _ *dynamodb.QueryInput, _ ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 			return &dynamodb.QueryOutput{Items: []map[string]types.AttributeValue{}}, nil
@@ -145,7 +145,7 @@ func TestListAtBatsByPlayer_Empty(t *testing.T) {
 	}
 }
 
-func TestListAtBatsByPlayer_Error(t *testing.T) {
+func TestListAtBatsByPlayerError(t *testing.T) {
 	ddb := &mockDynamoDB{
 		queryFn: func(_ context.Context, _ *dynamodb.QueryInput, _ ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 			return nil, errors.New("query error")

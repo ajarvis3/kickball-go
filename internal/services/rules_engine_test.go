@@ -66,7 +66,7 @@ func TestDoesInningMercyApply_True(t *testing.T) {
 	}
 	game := domain.Game{
 		State: domain.GameState{
-			Inning:    7,
+			Inning:     7,
 			InningRuns: []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0},
 		},
 	}
@@ -85,7 +85,7 @@ func TestDoesInningMercyApply_NotLastInning_WhenMercyDoesNotApplyToLastInning(t 
 	}
 	game := domain.Game{
 		State: domain.GameState{
-			Inning:    3,
+			Inning:     3,
 			InningRuns: []int{0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 		},
 	}
@@ -118,7 +118,7 @@ func TestDoesInningMercyApply_BelowThreshold(t *testing.T) {
 	rules := domain.LeagueRules{MaxInnings: 7, MercyRunsPerInning: 5, MercyAppliesLastInning: true}
 	game := domain.Game{
 		State: domain.GameState{
-			Inning:    7,
+			Inning:     7,
 			InningRuns: []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0},
 		},
 	}

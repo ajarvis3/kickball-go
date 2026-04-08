@@ -16,7 +16,7 @@ func newLeagueRulesClient(ddb DynamoDBAPI) *Client {
 	return NewClient(ddb, "test-table")
 }
 
-func TestPutLeagueRules_Success(t *testing.T) {
+func TestPutLeagueRulesSuccess(t *testing.T) {
 	ddb := &mockDynamoDB{
 		putItemFn: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 			return &dynamodb.PutItemOutput{}, nil
@@ -29,7 +29,7 @@ func TestPutLeagueRules_Success(t *testing.T) {
 	}
 }
 
-func TestPutLeagueRules_Error(t *testing.T) {
+func TestPutLeagueRulesError(t *testing.T) {
 	ddb := &mockDynamoDB{
 		putItemFn: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 			return nil, errors.New("put error")
@@ -42,7 +42,7 @@ func TestPutLeagueRules_Error(t *testing.T) {
 	}
 }
 
-func TestGetLeagueRules_Success(t *testing.T) {
+func TestGetLeagueRulesSuccess(t *testing.T) {
 	it := storage.LeagueRulesItem{
 		LeagueID:     "l1",
 		RulesVersion: 1,
@@ -68,7 +68,7 @@ func TestGetLeagueRules_Success(t *testing.T) {
 	}
 }
 
-func TestGetLeagueRules_NotFound_ReturnsNilNil(t *testing.T) {
+func TestGetLeagueRulesNotFoundReturnsNilNil(t *testing.T) {
 	ddb := &mockDynamoDB{
 		getItemFn: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 			return &dynamodb.GetItemOutput{Item: nil}, nil
@@ -84,7 +84,7 @@ func TestGetLeagueRules_NotFound_ReturnsNilNil(t *testing.T) {
 	}
 }
 
-func TestGetLeagueRules_Error(t *testing.T) {
+func TestGetLeagueRulesError(t *testing.T) {
 	ddb := &mockDynamoDB{
 		getItemFn: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 			return nil, errors.New("get error")

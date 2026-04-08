@@ -14,10 +14,10 @@ import (
 )
 
 type mockAtBatRepo struct {
-	putAtBatFn                func(ctx context.Context, atbat domain.AtBat) error
-	putAtBatAndUpdateGameFn   func(ctx context.Context, atbat domain.AtBat, updatedGame domain.Game) error
-	listAtBatsByGameFn        func(ctx context.Context, gameID string) ([]domain.AtBat, error)
-	listAtBatsByPlayerFn      func(ctx context.Context, playerID string) ([]domain.AtBat, error)
+	putAtBatFn              func(ctx context.Context, atbat domain.AtBat) error
+	putAtBatAndUpdateGameFn func(ctx context.Context, atbat domain.AtBat, updatedGame domain.Game) error
+	listAtBatsByGameFn      func(ctx context.Context, gameID string) ([]domain.AtBat, error)
+	listAtBatsByPlayerFn    func(ctx context.Context, playerID string) ([]domain.AtBat, error)
 }
 
 func (m *mockAtBatRepo) PutAtBat(ctx context.Context, atbat domain.AtBat) error {
@@ -71,15 +71,15 @@ func (m *mockLeagueRulesRepoForAtBat) GetLeagueRules(ctx context.Context, league
 
 func newTestGame() *domain.Game {
 	return &domain.Game{
-		GameID:     "g1",
-		LeagueID:   "l1",
-		HomeTeamID: "ht1",
-		AwayTeamID: "at1",
+		GameID:       "g1",
+		LeagueID:     "l1",
+		HomeTeamID:   "ht1",
+		AwayTeamID:   "at1",
 		RulesVersion: 1,
 		State: domain.GameState{
-			Inning:    1,
-			Half:      "top",
-			Outs:      0,
+			Inning:     1,
+			Half:       "top",
+			Outs:       0,
 			InningRuns: make([]int, 14), // 2 * 7
 		},
 	}

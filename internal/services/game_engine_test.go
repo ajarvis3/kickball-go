@@ -15,11 +15,11 @@ func makeGame(homeTeam, awayTeam string, inning int, half string, outs, homeScor
 		HomeTeamID: homeTeam,
 		AwayTeamID: awayTeam,
 		State: domain.GameState{
-			Inning:    inning,
-			Half:      half,
-			Outs:      outs,
-			HomeScore: homeScore,
-			AwayScore: awayScore,
+			Inning:     inning,
+			Half:       half,
+			Outs:       outs,
+			HomeScore:  homeScore,
+			AwayScore:  awayScore,
 			InningRuns: make([]int, 2*maxInnings),
 		},
 	}
@@ -174,11 +174,11 @@ func TestApplyAtBat_GameMercyRuleTriggered(t *testing.T) {
 		HomeTeamID: "ht",
 		AwayTeamID: "at",
 		State: domain.GameState{
-			Inning:    3,
-			Half:      "top",
-			Outs:      0,
-			HomeScore: 0,
-			AwayScore: 0,
+			Inning:     3,
+			Half:       "top",
+			Outs:       0,
+			HomeScore:  0,
+			AwayScore:  0,
 			InningRuns: make([]int, 14),
 		},
 	}

@@ -13,8 +13,8 @@ import (
 )
 
 type mockPlayerRepo struct {
-	putPlayerFn          func(ctx context.Context, player domain.Player) error
-	listPlayersByTeamFn  func(ctx context.Context, teamID string) ([]domain.Player, error)
+	putPlayerFn         func(ctx context.Context, player domain.Player) error
+	listPlayersByTeamFn func(ctx context.Context, teamID string) ([]domain.Player, error)
 }
 
 func (m *mockPlayerRepo) PutPlayer(ctx context.Context, player domain.Player) error {

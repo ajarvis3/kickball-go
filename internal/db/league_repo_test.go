@@ -18,7 +18,7 @@ func newLeagueClient(ddb DynamoDBAPI) *Client {
 	return NewClient(ddb, "test-table")
 }
 
-func TestPutLeague_Success(t *testing.T) {
+func TestPutLeagueSuccess(t *testing.T) {
 	ddb := &mockDynamoDB{
 		putItemFn: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 			return &dynamodb.PutItemOutput{}, nil
@@ -31,7 +31,7 @@ func TestPutLeague_Success(t *testing.T) {
 	}
 }
 
-func TestPutLeague_Conflict(t *testing.T) {
+func TestPutLeagueConflict(t *testing.T) {
 	ddb := &mockDynamoDB{
 		putItemFn: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 			return nil, &types.ConditionalCheckFailedException{}
@@ -44,7 +44,7 @@ func TestPutLeague_Conflict(t *testing.T) {
 	}
 }
 
-func TestPutLeague_OtherError(t *testing.T) {
+func TestPutLeagueOtherError(t *testing.T) {
 	ddb := &mockDynamoDB{
 		putItemFn: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 			return nil, errors.New("other error")
@@ -60,7 +60,7 @@ func TestPutLeague_OtherError(t *testing.T) {
 	}
 }
 
-func TestGetLeague_Success(t *testing.T) {
+func TestGetLeagueSuccess(t *testing.T) {
 	it := storage.LeagueItem{
 		LeagueID:            "l1",
 		Name:                "Test League",
@@ -85,7 +85,7 @@ func TestGetLeague_Success(t *testing.T) {
 	}
 }
 
-func TestGetLeague_NotFound(t *testing.T) {
+func TestGetLeagueNotFound(t *testing.T) {
 	ddb := &mockDynamoDB{
 		getItemFn: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 			return &dynamodb.GetItemOutput{Item: nil}, nil
@@ -98,7 +98,7 @@ func TestGetLeague_NotFound(t *testing.T) {
 	}
 }
 
-func TestGetLeague_Error(t *testing.T) {
+func TestGetLeagueError(t *testing.T) {
 	ddb := &mockDynamoDB{
 		getItemFn: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 			return nil, errors.New("get error")

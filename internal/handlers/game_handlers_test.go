@@ -13,9 +13,9 @@ import (
 )
 
 type mockGameRepo struct {
-	putGameFn            func(ctx context.Context, game domain.Game) error
-	getGameFn            func(ctx context.Context, gameID string) (*domain.Game, error)
-	listGamesByLeagueFn  func(ctx context.Context, leagueID string) ([]domain.Game, error)
+	putGameFn           func(ctx context.Context, game domain.Game) error
+	getGameFn           func(ctx context.Context, gameID string) (*domain.Game, error)
+	listGamesByLeagueFn func(ctx context.Context, leagueID string) ([]domain.Game, error)
 }
 
 func (m *mockGameRepo) PutGame(ctx context.Context, game domain.Game) error {
