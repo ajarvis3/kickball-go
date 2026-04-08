@@ -1,6 +1,8 @@
 package dto
 
 type RecordAtBatRequest struct {
+	GameID   string `json:"gameId"`
+	LeagueID string `json:"leagueId"`
 	PlayerID string `json:"playerId"`
 	TeamID   string `json:"teamId"`
 
@@ -9,7 +11,6 @@ type RecordAtBatRequest struct {
 	Fouls   int    `json:"fouls"`
 	Result  string `json:"result"`
 	RBI     int    `json:"rbi"`
-	Pitches int    `json:"pitches"`
 }
 
 type AtBatResponse struct {
@@ -25,5 +26,4 @@ type AtBatResponse struct {
 	Fouls   int    `json:"fouls"`
 	Result  string `json:"result"`
 	RBI     int    `json:"rbi"`
-	Pitches int    `json:"pitches"`
 }

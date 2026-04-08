@@ -31,8 +31,9 @@ func (h *AtBatHandlers) RecordAtBat(ctx context.Context, req events.APIGatewayPr
 	if err := json.Unmarshal([]byte(req.Body), &body); err != nil {
 		return responses.JsonResponse(http.StatusBadRequest, map[string]string{"error": err.Error()}), nil
 	}
-	gameID := req.PathParameters["gameId"]
-	leagueID := req.PathParameters["leagueId"]
+	// Accept gameId and leagueId from request body instead of path parameters
+	gameID := body.GameID
+	leagueID := body.LeagueID
 	if gameID == "" || body.PlayerID == "" {
 		return responses.JsonResponse(http.StatusBadRequest, map[string]string{"error": "gameId and playerId are required"}), nil
 	}

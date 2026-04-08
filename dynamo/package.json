@@ -7,10 +7,14 @@
    "scripts": {
       "build": "tsc -p tsconfig.json",
       "synth": "yarn build && cdk synth",
-      "deploy": "yarn build && cdk deploy"
+      "bootstrap": "cdk bootstrap",
+      "deploy": "cdk deploy",
+      "SBD": "yarn build && yarn synth && yarn bootstrap && yarn deploy",  
+      "down": "cdk destroy"
    },
    "dependencies": {
       "aws-cdk-lib": "^2.248.0",
+      "ci": "^2.3.0",
       "constructs": "^10.6.0"
    },
    "devDependencies": {

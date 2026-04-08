@@ -1,0 +1,323 @@
+{
+	"info": {
+		"_postman_id": "d02ffc00-9211-46a6-8df3-1ca6b48e28e5",
+		"name": "Kickball API",
+		"description": "Collection for testing Kickball API Gateway -> Lambda -> DynamoDB",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Create Game",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Test Game\",\n  \"leagueId\": \"822c0961-8e1e-4415-97fc-39705ddf6867\",\n  \"homeTeadId\": \"0f15ad0e-9027-4734-a049-42487ee05074\",\n  \"awayTeamId\": \"c675b785-7f9b-4494-80bf-776ac533bf3e\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/games",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"games"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Games",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/games?leagueId=822c0961-8e1e-4415-97fc-39705ddf6867",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"games"
+					],
+					"query": [
+						{
+							"key": "leagueId",
+							"value": "822c0961-8e1e-4415-97fc-39705ddf6867"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Team",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"leagueId\": \"822c0961-8e1e-4415-97fc-39705ddf6867\",\n  \"name\": \"The A Team\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/teams",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"teams"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Teams",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/teams",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"teams"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Player",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Jane Doe\",\n  \"teamId\": \"c675b785-7f9b-4494-80bf-776ac533bf3e\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/players",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"players"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Players",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/players?teamId=c675b785-7f9b-4494-80bf-776ac533bf3e",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"players"
+					],
+					"query": [
+						{
+							"key": "teamId",
+							"value": "c675b785-7f9b-4494-80bf-776ac533bf3e"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Record At Bat",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"leagueId\": \"822c0961-8e1e-4415-97fc-39705ddf6867\",\n  \"gameId\": \"d875fbd9-2613-4c47-b304-64964a330fd6\",\n  \"playerId\": \"7d28dbb7-c6be-4224-afc0-010e061e25d0\",\n  \"result\": \"single\",\n  \"strikes\": 2,\n  \"balls\": 2,\n  \"fouls\": 2,\n  \"rbi\": 1\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/atbats",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"atbats"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get AtBats By Game",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/atbats",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"atbats"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get AtBats By Player",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/atbats",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"atbats"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create League",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Summer League\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/leagues",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"leagues"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Leagues",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/leagues",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"leagues"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create League Rules",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"leagueId\": \"822c0961-8e1e-4415-97fc-39705ddf6867\",\n\t\"RulesVersion\": 1,\n    \"MaxStrikes\": 3,\n    \"MaxBalls\": 4,\n    \"MaxFouls\": 4,\n    \"MaxInnings\": 5,\n    \"MercyRunsPerInning\": 6,\n    \"MercyAppliesLastInning\": false,\n    \"GameMercyRuns\": 10\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/leaguerules",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"leaguerules"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get LeagueRules",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/leaguerules",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"leaguerules"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "https://w6r2jjl7kh.execute-api.us-east-1.amazonaws.com"
+		}
+	]
+}

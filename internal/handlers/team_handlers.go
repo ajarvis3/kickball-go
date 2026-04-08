@@ -27,7 +27,7 @@ func (h *TeamHandlers) CreateTeam(ctx context.Context, req events.APIGatewayProx
 	if err := json.Unmarshal([]byte(req.Body), &body); err != nil {
 		return responses.JsonResponse(http.StatusBadRequest, map[string]string{"error": err.Error()}), nil
 	}
-	leagueID := req.PathParameters["leagueId"]
+	leagueID := body.LeagueId
 	if leagueID == "" || body.Name == "" {
 		return responses.JsonResponse(http.StatusBadRequest, map[string]string{"error": "leagueId and name are required"}), nil
 	}

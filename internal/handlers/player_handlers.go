@@ -27,8 +27,9 @@ func (h *PlayerHandlers) CreatePlayer(ctx context.Context, req events.APIGateway
 	if err := json.Unmarshal([]byte(req.Body), &body); err != nil {
 		return responses.JsonResponse(http.StatusBadRequest, map[string]string{"error": err.Error()}), nil
 	}
-	teamID := req.PathParameters["teamId"]
-	leagueID := req.PathParameters["leagueId"]
+	// Accept teamId and leagueId from request body instead of path parameters
+	teamID := body.TeamID
+	leagueID := body.LeagueID
 	if teamID == "" || leagueID == "" || body.Name == "" {
 		return responses.JsonResponse(http.StatusBadRequest, map[string]string{"error": "teamId, leagueId and name are required"}), nil
 	}

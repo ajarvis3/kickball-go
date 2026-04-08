@@ -29,7 +29,7 @@ func (h *LeagueRulesHandlers) CreateLeagueRules(ctx context.Context, req events.
 		return responses.JsonResponse(http.StatusBadRequest, map[string]string{"error": err.Error()}), nil
 	}
 
-	leagueID := req.PathParameters["leagueId"]
+	leagueID := body.LeagueID
 	if leagueID == "" {
 		return responses.JsonResponse(http.StatusBadRequest, map[string]string{"error": "leagueId is required"}), nil
 	}
@@ -53,8 +53,17 @@ func (h *LeagueRulesHandlers) GetLeagueRules(ctx context.Context, req events.API
 	// Expect query params: leagueId and version
 	leagueID := req.QueryStringParameters["leagueId"]
 	versionStr := req.QueryStringParameters["version"]
-	if leagueID == "" || versionStr == "" {
-		return responses.JsonResponse(http.StatusBadRequest, map[string]string{"error": "leagueId and version query parameters are required"}), nil
+	if leagueID == "" {
+		return responses.JsonResponse(http.StatusBadRequest, map[string]string{"error": "leagueId query parameter is required"}), nil
+	}
+
+	// If version not provided, return the latest rules for the league
+	if versionStr == "" {
+		rules, resp := fetchResource(func() (*domain.LeagueRules, error) { return h.Rules.GetLatestLeagueRules(ctx, leagueID) }, "league rules not found")
+		if resp != nil {
+			return *resp, nil
+		}
+		return responses.JsonResponse(http.StatusOK, mappers.LeagueRulesToResponse(*rules)), nil
 	}
 
 	v, err := strconv.Atoi(versionStr)

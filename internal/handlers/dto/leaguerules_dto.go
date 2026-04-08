@@ -1,6 +1,7 @@
 package dto
 
 type CreateLeagueRulesRequest struct {
+	LeagueID               string                 `json:"leagueId"`
 	RulesVersion           int                    `json:"rulesVersion"`
 	MaxStrikes             int                    `json:"maxStrikes"`
 	MaxBalls               int                    `json:"maxBalls"`

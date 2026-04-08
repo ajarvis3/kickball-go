@@ -1,6 +1,7 @@
 package dto
 
 type CreateGameRequest struct {
+	LeagueID   string `json:"leagueId"`
 	HomeTeamID string `json:"homeTeamId"`
 	AwayTeamID string `json:"awayTeamId"`
 	Date       string `json:"date"` // ISO8601

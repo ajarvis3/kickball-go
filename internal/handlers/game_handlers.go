@@ -29,7 +29,8 @@ func (h *GameHandlers) CreateGame(ctx context.Context, req events.APIGatewayProx
 	if err := json.Unmarshal([]byte(req.Body), &body); err != nil {
 		return responses.JsonResponse(http.StatusBadRequest, map[string]string{"error": err.Error()}), nil
 	}
-	leagueID := req.PathParameters["leagueId"]
+	// Accept leagueId from request body (was previously a path parameter)
+	leagueID := body.LeagueID
 	if leagueID == "" || body.HomeTeamID == "" || body.AwayTeamID == "" {
 		return responses.JsonResponse(http.StatusBadRequest, map[string]string{"error": "leagueId, homeTeamId and awayTeamId are required"}), nil
 	}

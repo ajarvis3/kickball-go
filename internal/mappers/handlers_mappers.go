@@ -20,7 +20,7 @@ func RecordAtBatRequestToDomain(r dto.RecordAtBatRequest, gameID, leagueID strin
 		Fouls:    r.Fouls,
 		Result:   r.Result,
 		RBI:      r.RBI,
-		Pitches:  r.Pitches,
+		// Pitches removed from API payloads
 	}
 }
 
@@ -37,7 +37,7 @@ func AtBatToResponse(a domain.AtBat) dto.AtBatResponse {
 		Fouls:    a.Fouls,
 		Result:   a.Result,
 		RBI:      a.RBI,
-		Pitches:  a.Pitches,
+		// Pitches removed from API payloads
 	}
 }
 

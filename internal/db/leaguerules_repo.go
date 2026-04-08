@@ -19,6 +19,7 @@ import (
 type LeagueRulesRepository interface {
 	PutLeagueRules(ctx context.Context, rules domain.LeagueRules) error
 	GetLeagueRules(ctx context.Context, leagueID string, rulesVersion int) (*domain.LeagueRules, error)
+	GetLatestLeagueRules(ctx context.Context, leagueID string) (*domain.LeagueRules, error)
 }
 
 type leagueRulesRepo struct {
@@ -82,4 +83,36 @@ func (r *leagueRulesRepo) GetLeagueRules(ctx context.Context, leagueID string, r
 	}
 	lr := mappers.ItemToLeagueRules(stored)
 	return &lr, nil
+}
+
+// GetLatestLeagueRules finds the highest rules version for a league and returns it.
+func (r *leagueRulesRepo) GetLatestLeagueRules(ctx context.Context, leagueID string) (*domain.LeagueRules, error) {
+	// Query for items where PK = LEAGUE#<leagueID> and SK begins_with("RULES#")
+	keyCond := "PK = :pk AND begins_with(SK, :skprefix)"
+	out, err := r.client.ddb.Query(ctx, &dynamodb.QueryInput{
+		TableName:              aws.String(r.client.tableName),
+		KeyConditionExpression: aws.String(keyCond),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":pk":      &types.AttributeValueMemberS{Value: keys.LeaguePK(leagueID)},
+			":skprefix": &types.AttributeValueMemberS{Value: "RULES#"},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	var latest *domain.LeagueRules
+	maxVersion := -1
+	for _, it := range out.Items {
+		var stored storage.LeagueRulesItem
+		if err := attributevalue.UnmarshalMap(it, &stored); err != nil {
+			return nil, err
+		}
+		// stored.RulesVersion is numeric in the item mapping
+		if stored.RulesVersion > maxVersion {
+			v := mappers.ItemToLeagueRules(stored)
+			latest = &v
+			maxVersion = stored.RulesVersion
+		}
+	}
+	return latest, nil
 }

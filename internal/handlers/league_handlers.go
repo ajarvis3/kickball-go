@@ -43,8 +43,18 @@ func (h *LeagueHandlers) CreateLeague(ctx context.Context, req events.APIGateway
 func (h *LeagueHandlers) GetLeague(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	leagueID := req.QueryStringParameters["leagueId"]
 	if leagueID == "" {
-		return responses.JsonResponse(http.StatusBadRequest, map[string]string{"error": "leagueId query parameter is required"}), nil
+		// No leagueId provided -> return all leagues
+		leagues, err := h.Leagues.ListLeagues(ctx)
+		if err != nil {
+			return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), nil
+		}
+		var out []dto.LeagueResponse
+		for _, l := range leagues {
+			out = append(out, mappers.LeagueToResponse(l))
+		}
+		return responses.JsonResponse(http.StatusOK, out), nil
 	}
+
 	lg, resp := fetchResource(func() (*domain.League, error) { return h.Leagues.GetLeague(ctx, leagueID) }, "league not found")
 	if resp != nil {
 		return *resp, nil

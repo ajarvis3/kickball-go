@@ -20,6 +20,7 @@ import (
 type LeagueRepository interface {
 	PutLeague(ctx context.Context, league domain.League) error
 	GetLeague(ctx context.Context, leagueID string) (*domain.League, error)
+	ListLeagues(ctx context.Context) ([]domain.League, error)
 }
 
 type leagueRepo struct {
@@ -76,4 +77,30 @@ func (r *leagueRepo) GetLeague(ctx context.Context, leagueID string) (*domain.Le
 	}
 	l := mappers.ItemToLeague(stored)
 	return &l, nil
+}
+
+func (r *leagueRepo) ListLeagues(ctx context.Context) ([]domain.League, error) {
+	// Scan for items where PK begins with "LEAGUE#" and SK begins with "LEAGUE#"
+	expr := "begins_with(PK, :pkprefix) AND begins_with(SK, :skprefix)"
+	out, err := r.client.ddb.Scan(ctx, &dynamodb.ScanInput{
+		TableName: aws.String(r.client.tableName),
+		FilterExpression: aws.String(expr),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":pkprefix": &types.AttributeValueMemberS{Value: "LEAGUE#"},
+			":skprefix": &types.AttributeValueMemberS{Value: "LEAGUE#"},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var leagues []domain.League
+	for _, it := range out.Items {
+		var stored storage.LeagueItem
+		if err := attributevalue.UnmarshalMap(it, &stored); err != nil {
+			return nil, err
+		}
+		leagues = append(leagues, mappers.ItemToLeague(stored))
+	}
+	return leagues, nil
 }

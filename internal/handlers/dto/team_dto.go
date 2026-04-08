@@ -1,6 +1,7 @@
 package dto
 
 type CreateTeamRequest struct {
+	LeagueId string `json:"leagueId"`
 	Name string `json:"name"`
 }
 

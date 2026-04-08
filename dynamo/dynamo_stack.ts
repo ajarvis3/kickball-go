@@ -4,6 +4,8 @@ import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import * as lambda from "aws-cdk-lib/aws-lambda";
+import * as apigwv2 from "aws-cdk-lib/aws-apigatewayv2";
+import * as integrations from "aws-cdk-lib/aws-apigatewayv2-integrations";
 
 export class KickballStack extends cdk.Stack {
    constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -87,11 +89,28 @@ export class KickballStack extends cdk.Stack {
          }),
          timeout: cdk.Duration.seconds(15),
          environment: {
-            TABLE_NAME: table.tableName,
+            DYNAMODB_TABLE: table.tableName,
          },
       });
 
       // Grant the Lambda permissions to access the DynamoDB table
       table.grantReadWriteData(apiFn);
+
+      // Create an HTTP API and integrate it with the Lambda
+      const httpApi = new apigwv2.HttpApi(this, "KickballHttpApi", {
+         apiName: "KickballHttpApi",
+         defaultIntegration: new integrations.HttpLambdaIntegration(
+            "ApiIntegration",
+            apiFn,
+            {
+               payloadFormatVersion: apigwv2.PayloadFormatVersion.VERSION_1_0,
+            },
+         ),
+         createDefaultStage: true,
+      });
+
+      new cdk.CfnOutput(this, "HttpApiUrl", {
+         value: httpApi.apiEndpoint,
+      });
    }
 }
