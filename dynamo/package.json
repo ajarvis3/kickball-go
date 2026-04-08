@@ -1,16 +1,17 @@
 {
-  "name": "dynamo",
-  "version": "1.0.0",
-  "main": "index.js",
-  "license": "MIT",
-  "dependencies": {
-    "aws-cdk-lib": "^2.248.0",
-    "constructs": "^10.6.0"
-  },
-  "devDependencies": {
-    "@types/node": "^25.5.2",
-    "aws-cdk": "^2.1117.0",
-    "ts-node": "^10.9.2",
-    "typescript": "^6.0.2"
-  }
+   "name": "dynamo",
+   "version": "1.0.0",
+   "main": "index.js",
+   "license": "MIT",
+   "type": "module",
+   "dependencies": {
+      "aws-cdk-lib": "^2.248.0",
+      "constructs": "^10.6.0"
+   },
+   "devDependencies": {
+      "@types/node": "^25.5.2",
+      "aws-cdk": "^2.1117.0",
+      "ts-node": "^10.9.2",
+      "typescript": "^6.0.2"
+   }
 }
