@@ -1,6 +1,9 @@
 import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
+import * as path from "node:path";
+import { fileURLToPath } from "node:url";
+import * as lambda from "aws-cdk-lib/aws-lambda";
 
 export class KickballStack extends cdk.Stack {
    constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -56,5 +59,39 @@ export class KickballStack extends cdk.Stack {
       new cdk.CfnOutput(this, "KickballTableName", {
          value: table.tableName,
       });
+
+      // ESM-compatible __dirname
+      const __filename = fileURLToPath(import.meta.url);
+      const __dirname = path.dirname(__filename);
+
+      // Build and deploy the Go API as a Lambda function.
+      // This uses Docker bundling to compile a Linux binary and place
+      // the `bootstrap` executable into the asset output for a
+      // custom runtime (provided.al2).
+      const apiFn = new lambda.Function(this, "ApiFunction", {
+         runtime: lambda.Runtime.PROVIDED_AL2,
+         handler: "bootstrap",
+         code: lambda.Code.fromAsset(path.join(__dirname, "../.."), {
+            bundling: {
+               image: cdk.DockerImage.fromRegistry("golang:1.24"),
+               user: "root",
+               command: [
+                  "sh",
+                  "-c",
+                  [
+                     "cd /asset-input/cmd/api",
+                     "GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o /asset-output/bootstrap .",
+                  ].join(" && "),
+               ],
+            },
+         }),
+         timeout: cdk.Duration.seconds(15),
+         environment: {
+            TABLE_NAME: table.tableName,
+         },
+      });
+
+      // Grant the Lambda permissions to access the DynamoDB table
+      table.grantReadWriteData(apiFn);
    }
 }

@@ -1,9 +1,14 @@
 {
    "name": "dynamo",
    "version": "1.0.0",
+   "type": "module",
    "main": "index.js",
    "license": "MIT",
-   "type": "module",
+   "scripts": {
+      "build": "tsc -p tsconfig.json",
+      "synth": "yarn build && cdk synth",
+      "deploy": "yarn build && cdk deploy"
+   },
    "dependencies": {
       "aws-cdk-lib": "^2.248.0",
       "constructs": "^10.6.0"

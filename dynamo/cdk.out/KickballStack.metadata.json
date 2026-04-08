@@ -1,0 +1,64 @@
+{
+  "/KickballStack/KickballTable": [
+    {
+      "type": "aws:cdk:hasPhysicalName",
+      "data": {
+        "Ref": "KickballTableDC54C430"
+      }
+    }
+  ],
+  "/KickballStack/KickballTableName": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "KickballTableName"
+    }
+  ],
+  "/KickballStack/BootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "BootstrapVersion"
+    }
+  ],
+  "/KickballStack/CheckBootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CheckBootstrapVersion"
+    }
+  ],
+  "/KickballStack/KickballTable/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "KickballTableDC54C430"
+    }
+  ],
+  "/KickballStack/ApiFunction/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiFunctionCE271BD4"
+    }
+  ],
+  "/KickballStack/CDKMetadata/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CDKMetadata"
+    }
+  ],
+  "/KickballStack/CDKMetadata/Condition": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CDKMetadataAvailable"
+    }
+  ],
+  "/KickballStack/ApiFunction/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiFunctionServiceRole52B9747B"
+    }
+  ],
+  "/KickballStack/ApiFunction/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiFunctionServiceRoleDefaultPolicy20A32B8D"
+    }
+  ]
+}
