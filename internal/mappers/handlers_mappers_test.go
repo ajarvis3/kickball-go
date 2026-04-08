@@ -16,7 +16,6 @@ func TestRecordAtBatRequestToDomain(t *testing.T) {
 		Fouls:    1,
 		Result:   "single",
 		RBI:      1,
-		Pitches:  7,
 	}
 	a := RecordAtBatRequestToDomain(r, "g1", "l1")
 	if a.GameID != "g1" {

@@ -33,7 +33,7 @@ func makeRules(maxInnings int) domain.LeagueRules {
 	}
 }
 
-func TestApplyAtBat_NilEngine(t *testing.T) {
+func TestApplyAtBatNilEngine(t *testing.T) {
 	var e *GameEngine
 	_, err := e.ApplyAtBat(domain.Game{}, domain.LeagueRules{}, domain.AtBat{})
 	if !errors.Is(err, apperrors.ErrInternalError) {
@@ -41,7 +41,7 @@ func TestApplyAtBat_NilEngine(t *testing.T) {
 	}
 }
 
-func TestApplyAtBat_NilRules(t *testing.T) {
+func TestApplyAtBatNilRules(t *testing.T) {
 	e := &GameEngine{Rules: nil}
 	_, err := e.ApplyAtBat(domain.Game{}, domain.LeagueRules{}, domain.AtBat{})
 	if !errors.Is(err, apperrors.ErrInternalError) {
@@ -49,7 +49,7 @@ func TestApplyAtBat_NilRules(t *testing.T) {
 	}
 }
 
-func TestApplyAtBat_InvalidStrikeCount(t *testing.T) {
+func TestApplyAtBatInvalidStrikeCount(t *testing.T) {
 	e := NewGameEngine(NewRulesEngine())
 	game := makeGame("ht", "at", 1, "top", 0, 0, 0, 7)
 	rules := makeRules(7)
@@ -60,7 +60,7 @@ func TestApplyAtBat_InvalidStrikeCount(t *testing.T) {
 	}
 }
 
-func TestApplyAtBat_SingleWithRBI(t *testing.T) {
+func TestApplyAtBatSingleWithRBI(t *testing.T) {
 	e := NewGameEngine(NewRulesEngine())
 	game := makeGame("ht", "at", 1, "top", 0, 0, 0, 7)
 	rules := makeRules(7)
@@ -77,7 +77,7 @@ func TestApplyAtBat_SingleWithRBI(t *testing.T) {
 	}
 }
 
-func TestApplyAtBat_OutIncrementsOuts(t *testing.T) {
+func TestApplyAtBatOutIncrementsOuts(t *testing.T) {
 	e := NewGameEngine(NewRulesEngine())
 	game := makeGame("ht", "at", 1, "top", 0, 0, 0, 7)
 	rules := makeRules(7)
@@ -91,7 +91,7 @@ func TestApplyAtBat_OutIncrementsOuts(t *testing.T) {
 	}
 }
 
-func TestApplyAtBat_ThreeOutsAdvancesTopToBottom(t *testing.T) {
+func TestApplyAtBatThreeOutsAdvancesTopToBottom(t *testing.T) {
 	e := NewGameEngine(NewRulesEngine())
 	game := makeGame("ht", "at", 1, "top", 2, 0, 0, 7)
 	rules := makeRules(7)
@@ -111,7 +111,7 @@ func TestApplyAtBat_ThreeOutsAdvancesTopToBottom(t *testing.T) {
 	}
 }
 
-func TestApplyAtBat_ThreeOutsAtBottomAdvancesToNextInning(t *testing.T) {
+func TestApplyAtBatThreeOutsAtBottomAdvancesToNextInning(t *testing.T) {
 	e := NewGameEngine(NewRulesEngine())
 	game := makeGame("ht", "at", 1, "bottom", 2, 0, 0, 7)
 	rules := makeRules(7)
@@ -131,7 +131,7 @@ func TestApplyAtBat_ThreeOutsAtBottomAdvancesToNextInning(t *testing.T) {
 	}
 }
 
-func TestApplyAtBat_DoublePlayAddsTwoOuts(t *testing.T) {
+func TestApplyAtBatDoublePlayAddsTwoOuts(t *testing.T) {
 	e := NewGameEngine(NewRulesEngine())
 	game := makeGame("ht", "at", 1, "top", 0, 0, 0, 7)
 	rules := makeRules(7)
@@ -145,7 +145,7 @@ func TestApplyAtBat_DoublePlayAddsTwoOuts(t *testing.T) {
 	}
 }
 
-func TestApplyAtBat_TriplePlayAddsThreeOuts(t *testing.T) {
+func TestApplyAtBatTriplePlayAddsThreeOuts(t *testing.T) {
 	e := NewGameEngine(NewRulesEngine())
 	game := makeGame("ht", "at", 1, "top", 0, 0, 0, 7)
 	rules := makeRules(7)
@@ -160,7 +160,7 @@ func TestApplyAtBat_TriplePlayAddsThreeOuts(t *testing.T) {
 	}
 }
 
-func TestApplyAtBat_GameMercyRuleTriggered(t *testing.T) {
+func TestApplyAtBatGameMercyRuleTriggered(t *testing.T) {
 	e := NewGameEngine(NewRulesEngine())
 	rules := domain.LeagueRules{
 		MaxInnings:    7,
@@ -196,7 +196,7 @@ func TestApplyAtBat_GameMercyRuleTriggered(t *testing.T) {
 	}
 }
 
-func TestApplyAtBat_AwayTeamScores(t *testing.T) {
+func TestApplyAtBatAwayTeamScores(t *testing.T) {
 	e := NewGameEngine(NewRulesEngine())
 	game := makeGame("ht", "at", 1, "top", 0, 0, 0, 7)
 	rules := makeRules(7)
@@ -211,7 +211,7 @@ func TestApplyAtBat_AwayTeamScores(t *testing.T) {
 	}
 }
 
-func TestApplyAtBat_StrikeoutIncrementsOuts(t *testing.T) {
+func TestApplyAtBatStrikeoutIncrementsOuts(t *testing.T) {
 	e := NewGameEngine(NewRulesEngine())
 	game := makeGame("ht", "at", 1, "top", 1, 0, 0, 7)
 	rules := makeRules(7)

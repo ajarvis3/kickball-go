@@ -25,16 +25,13 @@ func (m *mockTeamRepo) ListTeamsByLeague(ctx context.Context, leagueID string) (
 	return m.listTeamsByLeagueFn(ctx, leagueID)
 }
 
-func TestCreateTeam_Success(t *testing.T) {
+func TestCreateTeamSuccess(t *testing.T) {
 	repo := &mockTeamRepo{
 		putTeamFn: func(_ context.Context, _ domain.Team) error { return nil },
 	}
 	h := NewTeamHandlers(repo)
-	body, _ := json.Marshal(map[string]string{"name": "Tigers"})
-	req := events.APIGatewayProxyRequest{
-		Body:           string(body),
-		PathParameters: map[string]string{"leagueId": "l1"},
-	}
+	body, _ := json.Marshal(map[string]string{"name": "Tigers", "leagueId": "l1"})
+	req := events.APIGatewayProxyRequest{Body: string(body)}
 	resp, err := h.CreateTeam(context.Background(), req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -44,7 +41,7 @@ func TestCreateTeam_Success(t *testing.T) {
 	}
 }
 
-func TestCreateTeam_MissingLeagueId(t *testing.T) {
+func TestCreateTeamMissingLeagueId(t *testing.T) {
 	repo := &mockTeamRepo{}
 	h := NewTeamHandlers(repo)
 	body, _ := json.Marshal(map[string]string{"name": "Tigers"})
@@ -58,14 +55,11 @@ func TestCreateTeam_MissingLeagueId(t *testing.T) {
 	}
 }
 
-func TestCreateTeam_MissingName(t *testing.T) {
+func TestCreateTeamMissingName(t *testing.T) {
 	repo := &mockTeamRepo{}
 	h := NewTeamHandlers(repo)
-	body, _ := json.Marshal(map[string]string{"name": ""})
-	req := events.APIGatewayProxyRequest{
-		Body:           string(body),
-		PathParameters: map[string]string{"leagueId": "l1"},
-	}
+	body, _ := json.Marshal(map[string]string{"name": "", "leagueId": "l1"})
+	req := events.APIGatewayProxyRequest{Body: string(body)}
 	resp, err := h.CreateTeam(context.Background(), req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -75,16 +69,13 @@ func TestCreateTeam_MissingName(t *testing.T) {
 	}
 }
 
-func TestCreateTeam_RepoError(t *testing.T) {
+func TestCreateTeamRepoError(t *testing.T) {
 	repo := &mockTeamRepo{
 		putTeamFn: func(_ context.Context, _ domain.Team) error { return errors.New("db error") },
 	}
 	h := NewTeamHandlers(repo)
-	body, _ := json.Marshal(map[string]string{"name": "Tigers"})
-	req := events.APIGatewayProxyRequest{
-		Body:           string(body),
-		PathParameters: map[string]string{"leagueId": "l1"},
-	}
+	body, _ := json.Marshal(map[string]string{"name": "Tigers", "leagueId": "l1"})
+	req := events.APIGatewayProxyRequest{Body: string(body)}
 	resp, err := h.CreateTeam(context.Background(), req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -94,7 +85,7 @@ func TestCreateTeam_RepoError(t *testing.T) {
 	}
 }
 
-func TestGetTeams_Success(t *testing.T) {
+func TestGetTeamsSuccess(t *testing.T) {
 	repo := &mockTeamRepo{
 		listTeamsByLeagueFn: func(_ context.Context, _ string) ([]domain.Team, error) {
 			return []domain.Team{{TeamID: "t1", Name: "Tigers"}}, nil
@@ -113,7 +104,7 @@ func TestGetTeams_Success(t *testing.T) {
 	}
 }
 
-func TestGetTeams_MissingLeagueId(t *testing.T) {
+func TestGetTeamsMissingLeagueId(t *testing.T) {
 	repo := &mockTeamRepo{}
 	h := NewTeamHandlers(repo)
 	req := events.APIGatewayProxyRequest{}
@@ -126,7 +117,7 @@ func TestGetTeams_MissingLeagueId(t *testing.T) {
 	}
 }
 
-func TestGetTeams_RepoError(t *testing.T) {
+func TestGetTeamsRepoError(t *testing.T) {
 	repo := &mockTeamRepo{
 		listTeamsByLeagueFn: func(_ context.Context, _ string) ([]domain.Team, error) {
 			return nil, errors.New("db error")

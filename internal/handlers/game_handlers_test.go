@@ -31,8 +31,9 @@ func (m *mockGameRepo) ListGamesByLeague(ctx context.Context, leagueID string) (
 }
 
 type mockLeagueRulesRepo struct {
-	putLeagueRulesFn func(ctx context.Context, rules domain.LeagueRules) error
-	getLeagueRulesFn func(ctx context.Context, leagueID string, rulesVersion int) (*domain.LeagueRules, error)
+	putLeagueRulesFn       func(ctx context.Context, rules domain.LeagueRules) error
+	getLeagueRulesFn       func(ctx context.Context, leagueID string, rulesVersion int) (*domain.LeagueRules, error)
+	getLatestLeagueRulesFn func(ctx context.Context, leagueID string) (*domain.LeagueRules, error)
 }
 
 func (m *mockLeagueRulesRepo) PutLeagueRules(ctx context.Context, rules domain.LeagueRules) error {
@@ -41,6 +42,16 @@ func (m *mockLeagueRulesRepo) PutLeagueRules(ctx context.Context, rules domain.L
 
 func (m *mockLeagueRulesRepo) GetLeagueRules(ctx context.Context, leagueID string, rulesVersion int) (*domain.LeagueRules, error) {
 	return m.getLeagueRulesFn(ctx, leagueID, rulesVersion)
+}
+
+func (m *mockLeagueRulesRepo) GetLatestLeagueRules(ctx context.Context, leagueID string) (*domain.LeagueRules, error) {
+	if m.getLatestLeagueRulesFn != nil {
+		return m.getLatestLeagueRulesFn(ctx, leagueID)
+	}
+	if m.getLeagueRulesFn != nil {
+		return m.getLeagueRulesFn(ctx, leagueID, 0)
+	}
+	return nil, nil
 }
 
 func defaultRules() *domain.LeagueRules {
@@ -53,7 +64,7 @@ func defaultRules() *domain.LeagueRules {
 	}
 }
 
-func TestCreateGame_Success(t *testing.T) {
+func TestCreateGameSuccess(t *testing.T) {
 	gameRepo := &mockGameRepo{
 		putGameFn: func(_ context.Context, _ domain.Game) error { return nil },
 	}
@@ -63,11 +74,8 @@ func TestCreateGame_Success(t *testing.T) {
 		},
 	}
 	h := NewGameHandlers(gameRepo, rulesRepo)
-	body, _ := json.Marshal(map[string]string{"homeTeamId": "ht1", "awayTeamId": "at1"})
-	req := events.APIGatewayProxyRequest{
-		Body:           string(body),
-		PathParameters: map[string]string{"leagueId": "l1"},
-	}
+	body, _ := json.Marshal(map[string]string{"homeTeamId": "ht1", "awayTeamId": "at1", "leagueId": "l1"})
+	req := events.APIGatewayProxyRequest{Body: string(body)}
 	resp, err := h.CreateGame(context.Background(), req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -77,7 +85,7 @@ func TestCreateGame_Success(t *testing.T) {
 	}
 }
 
-func TestCreateGame_MissingLeagueId(t *testing.T) {
+func TestCreateGameMissingLeagueId(t *testing.T) {
 	gameRepo := &mockGameRepo{}
 	rulesRepo := &mockLeagueRulesRepo{}
 	h := NewGameHandlers(gameRepo, rulesRepo)
@@ -92,7 +100,7 @@ func TestCreateGame_MissingLeagueId(t *testing.T) {
 	}
 }
 
-func TestCreateGame_RulesNotFound(t *testing.T) {
+func TestCreateGameRulesNotFound(t *testing.T) {
 	gameRepo := &mockGameRepo{}
 	rulesRepo := &mockLeagueRulesRepo{
 		getLeagueRulesFn: func(_ context.Context, _ string, _ int) (*domain.LeagueRules, error) {
@@ -100,11 +108,8 @@ func TestCreateGame_RulesNotFound(t *testing.T) {
 		},
 	}
 	h := NewGameHandlers(gameRepo, rulesRepo)
-	body, _ := json.Marshal(map[string]string{"homeTeamId": "ht1", "awayTeamId": "at1"})
-	req := events.APIGatewayProxyRequest{
-		Body:           string(body),
-		PathParameters: map[string]string{"leagueId": "l1"},
-	}
+	body, _ := json.Marshal(map[string]string{"homeTeamId": "ht1", "awayTeamId": "at1", "leagueId": "l1"})
+	req := events.APIGatewayProxyRequest{Body: string(body)}
 	resp, err := h.CreateGame(context.Background(), req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -114,7 +119,7 @@ func TestCreateGame_RulesNotFound(t *testing.T) {
 	}
 }
 
-func TestCreateGame_RepoError(t *testing.T) {
+func TestCreateGameRepoError(t *testing.T) {
 	gameRepo := &mockGameRepo{
 		putGameFn: func(_ context.Context, _ domain.Game) error { return errors.New("db error") },
 	}
@@ -124,11 +129,8 @@ func TestCreateGame_RepoError(t *testing.T) {
 		},
 	}
 	h := NewGameHandlers(gameRepo, rulesRepo)
-	body, _ := json.Marshal(map[string]string{"homeTeamId": "ht1", "awayTeamId": "at1"})
-	req := events.APIGatewayProxyRequest{
-		Body:           string(body),
-		PathParameters: map[string]string{"leagueId": "l1"},
-	}
+	body, _ := json.Marshal(map[string]string{"homeTeamId": "ht1", "awayTeamId": "at1", "leagueId": "l1"})
+	req := events.APIGatewayProxyRequest{Body: string(body)}
 	resp, err := h.CreateGame(context.Background(), req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -138,7 +140,7 @@ func TestCreateGame_RepoError(t *testing.T) {
 	}
 }
 
-func TestGetGame_ByGameId_Success(t *testing.T) {
+func TestGetGameByGameIdSuccess(t *testing.T) {
 	game := &domain.Game{GameID: "g1", LeagueID: "l1", State: domain.GameState{InningRuns: []int{}}}
 	gameRepo := &mockGameRepo{
 		getGameFn: func(_ context.Context, _ string) (*domain.Game, error) { return game, nil },
@@ -157,7 +159,7 @@ func TestGetGame_ByGameId_Success(t *testing.T) {
 	}
 }
 
-func TestGetGame_ByLeagueId_Success(t *testing.T) {
+func TestGetGameByLeagueIdSuccess(t *testing.T) {
 	gameRepo := &mockGameRepo{
 		listGamesByLeagueFn: func(_ context.Context, _ string) ([]domain.Game, error) {
 			return []domain.Game{{GameID: "g1"}}, nil
@@ -177,7 +179,7 @@ func TestGetGame_ByLeagueId_Success(t *testing.T) {
 	}
 }
 
-func TestGetGame_MissingParams(t *testing.T) {
+func TestGetGameMissingParams(t *testing.T) {
 	gameRepo := &mockGameRepo{}
 	rulesRepo := &mockLeagueRulesRepo{}
 	h := NewGameHandlers(gameRepo, rulesRepo)
@@ -191,7 +193,7 @@ func TestGetGame_MissingParams(t *testing.T) {
 	}
 }
 
-func TestGetGame_NotFound(t *testing.T) {
+func TestGetGameNotFound(t *testing.T) {
 	gameRepo := &mockGameRepo{
 		getGameFn: func(_ context.Context, _ string) (*domain.Game, error) { return nil, nil },
 	}

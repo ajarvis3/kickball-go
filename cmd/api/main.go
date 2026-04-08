@@ -4,15 +4,19 @@ import (
 	"context"
 	"log"
 
+	"os"
+
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"os"
+
+	"net/http"
 
 	"github.com/ajarvis3/kickball-go/internal/db"
 	"github.com/ajarvis3/kickball-go/internal/handlers"
 	"github.com/ajarvis3/kickball-go/internal/services"
+	"github.com/ajarvis3/kickball-go/pkg/responses"
 )
 
 var (
@@ -61,57 +65,28 @@ func init() {
 	leagueRulesHandler = handlers.NewLeagueRulesHandlers(leagueRulesRepo)
 }
 
+
 func router(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	log.Printf("Received request: %s %s", req.HTTPMethod, req.Path)
 
 	switch req.Path {
 	case "/atbats":
-		if req.HTTPMethod == "POST" {
-			return atBatHandler.RecordAtBat(ctx, req)
-		}
-		if req.HTTPMethod == "GET" {
-			return atBatHandler.GetAtBats(ctx, req)
-		}
+		return handleMethods(ctx, req, atBatHandler.RecordAtBat, atBatHandler.GetAtBats)
 
 	case "/games":
-		if req.HTTPMethod == "POST" {
-			return gameHandler.CreateGame(ctx, req)
-		}
-		if req.HTTPMethod == "GET" {
-			return gameHandler.GetGame(ctx, req)
-		}
+		return handleMethods(ctx, req, gameHandler.CreateGame, gameHandler.GetGame)
 
 	case "/teams":
-		if req.HTTPMethod == "POST" {
-			return teamHandler.CreateTeam(ctx, req)
-		}
-		if req.HTTPMethod == "GET" {
-			return teamHandler.GetTeams(ctx, req)
-		}
+		return handleMethods(ctx, req, teamHandler.CreateTeam, teamHandler.GetTeams)
 
 	case "/leagues":
-		if req.HTTPMethod == "POST" {
-			return leagueHandler.CreateLeague(ctx, req)
-		}
-		if req.HTTPMethod == "GET" {
-			return leagueHandler.GetLeague(ctx, req)
-		}
+		return handleMethods(ctx, req, leagueHandler.CreateLeague, leagueHandler.GetLeague)
 
 	case "/leaguerules":
-		if req.HTTPMethod == "POST" {
-			return leagueRulesHandler.CreateLeagueRules(ctx, req)
-		}
-		if req.HTTPMethod == "GET" {
-			return leagueRulesHandler.GetLeagueRules(ctx, req)
-		}
+		return handleMethods(ctx, req, leagueRulesHandler.CreateLeagueRules, leagueRulesHandler.GetLeagueRules)
 
 	case "/players":
-		if req.HTTPMethod == "POST" {
-			return playerHandler.CreatePlayer(ctx, req)
-		}
-		if req.HTTPMethod == "GET" {
-			return playerHandler.GetPlayers(ctx, req)
-		}
+		return handleMethods(ctx, req, playerHandler.CreatePlayer, playerHandler.GetPlayers)
 	}
 
 	return events.APIGatewayProxyResponse{
@@ -125,4 +100,20 @@ func router(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIG
 
 func main() {
 	lambda.Start(router)
+}
+
+// methodHandler is the signature used by our route handlers.
+type methodHandler func(context.Context, events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error)
+
+// handleMethods dispatches to the provided POST or GET handler functions
+// based on req.HTTPMethod. If the method is not supported, returns 405.
+func handleMethods(ctx context.Context, req events.APIGatewayProxyRequest, post methodHandler, get methodHandler) (events.APIGatewayProxyResponse, error) {
+	switch req.HTTPMethod {
+	case "POST":
+		return post(ctx, req)
+	case "GET":
+		return get(ctx, req)
+	default:
+		return responses.JsonResponse(http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"}), nil
+	}
 }

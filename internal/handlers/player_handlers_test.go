@@ -25,19 +25,13 @@ func (m *mockPlayerRepo) ListPlayersByTeam(ctx context.Context, teamID string) (
 	return m.listPlayersByTeamFn(ctx, teamID)
 }
 
-func TestCreatePlayer_Success(t *testing.T) {
+func TestCreatePlayerSuccess(t *testing.T) {
 	repo := &mockPlayerRepo{
 		putPlayerFn: func(_ context.Context, _ domain.Player) error { return nil },
 	}
 	h := NewPlayerHandlers(repo)
-	body, _ := json.Marshal(map[string]interface{}{"name": "Alice", "number": 7, "position": "ss"})
-	req := events.APIGatewayProxyRequest{
-		Body: string(body),
-		PathParameters: map[string]string{
-			"teamId":   "t1",
-			"leagueId": "l1",
-		},
-	}
+	body, _ := json.Marshal(map[string]interface{}{"name": "Alice", "number": 7, "position": "ss", "teamId": "t1", "leagueId": "l1"})
+	req := events.APIGatewayProxyRequest{Body: string(body)}
 	resp, err := h.CreatePlayer(context.Background(), req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -47,14 +41,11 @@ func TestCreatePlayer_Success(t *testing.T) {
 	}
 }
 
-func TestCreatePlayer_MissingTeamId(t *testing.T) {
+func TestCreatePlayerMissingTeamId(t *testing.T) {
 	repo := &mockPlayerRepo{}
 	h := NewPlayerHandlers(repo)
-	body, _ := json.Marshal(map[string]string{"name": "Alice"})
-	req := events.APIGatewayProxyRequest{
-		Body:           string(body),
-		PathParameters: map[string]string{"leagueId": "l1"},
-	}
+	body, _ := json.Marshal(map[string]interface{}{"name": "Alice", "leagueId": "l1"})
+	req := events.APIGatewayProxyRequest{Body: string(body)}
 	resp, err := h.CreatePlayer(context.Background(), req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -64,17 +55,11 @@ func TestCreatePlayer_MissingTeamId(t *testing.T) {
 	}
 }
 
-func TestCreatePlayer_MissingName(t *testing.T) {
+func TestCreatePlayerMissingName(t *testing.T) {
 	repo := &mockPlayerRepo{}
 	h := NewPlayerHandlers(repo)
-	body, _ := json.Marshal(map[string]string{"name": ""})
-	req := events.APIGatewayProxyRequest{
-		Body: string(body),
-		PathParameters: map[string]string{
-			"teamId":   "t1",
-			"leagueId": "l1",
-		},
-	}
+	body, _ := json.Marshal(map[string]interface{}{"name": "", "teamId": "t1", "leagueId": "l1"})
+	req := events.APIGatewayProxyRequest{Body: string(body)}
 	resp, err := h.CreatePlayer(context.Background(), req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -84,19 +69,13 @@ func TestCreatePlayer_MissingName(t *testing.T) {
 	}
 }
 
-func TestCreatePlayer_RepoError(t *testing.T) {
+func TestCreatePlayerRepoError(t *testing.T) {
 	repo := &mockPlayerRepo{
 		putPlayerFn: func(_ context.Context, _ domain.Player) error { return errors.New("db error") },
 	}
 	h := NewPlayerHandlers(repo)
-	body, _ := json.Marshal(map[string]string{"name": "Alice"})
-	req := events.APIGatewayProxyRequest{
-		Body: string(body),
-		PathParameters: map[string]string{
-			"teamId":   "t1",
-			"leagueId": "l1",
-		},
-	}
+	body, _ := json.Marshal(map[string]interface{}{"name": "Alice", "teamId": "t1", "leagueId": "l1"})
+	req := events.APIGatewayProxyRequest{Body: string(body)}
 	resp, err := h.CreatePlayer(context.Background(), req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -106,7 +85,7 @@ func TestCreatePlayer_RepoError(t *testing.T) {
 	}
 }
 
-func TestGetPlayers_Success(t *testing.T) {
+func TestGetPlayersSuccess(t *testing.T) {
 	repo := &mockPlayerRepo{
 		listPlayersByTeamFn: func(_ context.Context, _ string) ([]domain.Player, error) {
 			return []domain.Player{{PlayerID: "p1", Name: "Alice"}}, nil
@@ -125,7 +104,7 @@ func TestGetPlayers_Success(t *testing.T) {
 	}
 }
 
-func TestGetPlayers_MissingTeamId(t *testing.T) {
+func TestGetPlayersMissingTeamId(t *testing.T) {
 	repo := &mockPlayerRepo{}
 	h := NewPlayerHandlers(repo)
 	req := events.APIGatewayProxyRequest{}
@@ -138,7 +117,7 @@ func TestGetPlayers_MissingTeamId(t *testing.T) {
 	}
 }
 
-func TestGetPlayers_RepoError(t *testing.T) {
+func TestGetPlayersRepoError(t *testing.T) {
 	repo := &mockPlayerRepo{
 		listPlayersByTeamFn: func(_ context.Context, _ string) ([]domain.Player, error) {
 			return nil, errors.New("db error")

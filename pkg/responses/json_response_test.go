@@ -6,21 +6,21 @@ import (
 	"testing"
 )
 
-func TestJsonResponse_StatusCode(t *testing.T) {
+func TestJsonResponseStatusCode(t *testing.T) {
 	resp := JsonResponse(http.StatusOK, map[string]string{"key": "value"})
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("StatusCode = %d; want %d", resp.StatusCode, http.StatusOK)
 	}
 }
 
-func TestJsonResponse_ContentTypeHeader(t *testing.T) {
+func TestJsonResponseContentTypeHeader(t *testing.T) {
 	resp := JsonResponse(http.StatusCreated, nil)
 	if resp.Headers["Content-Type"] != "application/json" {
 		t.Errorf("Content-Type = %q; want application/json", resp.Headers["Content-Type"])
 	}
 }
 
-func TestJsonResponse_Body(t *testing.T) {
+func TestJsonResponseBody(t *testing.T) {
 	body := map[string]string{"hello": "world"}
 	resp := JsonResponse(http.StatusOK, body)
 	var got map[string]string
@@ -32,14 +32,14 @@ func TestJsonResponse_Body(t *testing.T) {
 	}
 }
 
-func TestJsonResponse_201(t *testing.T) {
+func TestJsonResponse201(t *testing.T) {
 	resp := JsonResponse(http.StatusCreated, map[string]string{"id": "123"})
 	if resp.StatusCode != http.StatusCreated {
 		t.Errorf("StatusCode = %d; want %d", resp.StatusCode, http.StatusCreated)
 	}
 }
 
-func TestJsonResponse_404(t *testing.T) {
+func TestJsonResponse404(t *testing.T) {
 	resp := JsonResponse(http.StatusNotFound, map[string]string{"error": "not found"})
 	if resp.StatusCode != http.StatusNotFound {
 		t.Errorf("StatusCode = %d; want %d", resp.StatusCode, http.StatusNotFound)
@@ -53,7 +53,7 @@ func TestJsonResponse_404(t *testing.T) {
 	}
 }
 
-func TestJsonResponse_NilBody(t *testing.T) {
+func TestJsonResponseNilBody(t *testing.T) {
 	resp := JsonResponse(http.StatusNoContent, nil)
 	if resp.StatusCode != http.StatusNoContent {
 		t.Errorf("StatusCode = %d; want %d", resp.StatusCode, http.StatusNoContent)

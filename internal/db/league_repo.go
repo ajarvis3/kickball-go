@@ -83,7 +83,7 @@ func (r *leagueRepo) ListLeagues(ctx context.Context) ([]domain.League, error) {
 	// Scan for items where PK begins with "LEAGUE#" and SK begins with "LEAGUE#"
 	expr := "begins_with(PK, :pkprefix) AND begins_with(SK, :skprefix)"
 	out, err := r.client.ddb.Scan(ctx, &dynamodb.ScanInput{
-		TableName: aws.String(r.client.tableName),
+		TableName:        aws.String(r.client.tableName),
 		FilterExpression: aws.String(expr),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":pkprefix": &types.AttributeValueMemberS{Value: "LEAGUE#"},

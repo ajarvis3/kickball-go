@@ -93,7 +93,7 @@ func (r *leagueRulesRepo) GetLatestLeagueRules(ctx context.Context, leagueID str
 		TableName:              aws.String(r.client.tableName),
 		KeyConditionExpression: aws.String(keyCond),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":pk":      &types.AttributeValueMemberS{Value: keys.LeaguePK(leagueID)},
+			":pk":       &types.AttributeValueMemberS{Value: keys.LeaguePK(leagueID)},
 			":skprefix": &types.AttributeValueMemberS{Value: "RULES#"},
 		},
 	})

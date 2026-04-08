@@ -14,8 +14,9 @@ import (
 
 // mockLeagueRulesRepoForHandlers is a local mock (distinct name to avoid conflicts within same package).
 type mockLeagueRulesRepoForHandlers struct {
-	putLeagueRulesFn func(ctx context.Context, rules domain.LeagueRules) error
-	getLeagueRulesFn func(ctx context.Context, leagueID string, rulesVersion int) (*domain.LeagueRules, error)
+	putLeagueRulesFn       func(ctx context.Context, rules domain.LeagueRules) error
+	getLeagueRulesFn       func(ctx context.Context, leagueID string, rulesVersion int) (*domain.LeagueRules, error)
+	getLatestLeagueRulesFn func(ctx context.Context, leagueID string) (*domain.LeagueRules, error)
 }
 
 func (m *mockLeagueRulesRepoForHandlers) PutLeagueRules(ctx context.Context, rules domain.LeagueRules) error {
@@ -26,7 +27,17 @@ func (m *mockLeagueRulesRepoForHandlers) GetLeagueRules(ctx context.Context, lea
 	return m.getLeagueRulesFn(ctx, leagueID, rulesVersion)
 }
 
-func TestCreateLeagueRules_Success(t *testing.T) {
+func (m *mockLeagueRulesRepoForHandlers) GetLatestLeagueRules(ctx context.Context, leagueID string) (*domain.LeagueRules, error) {
+	if m.getLatestLeagueRulesFn != nil {
+		return m.getLatestLeagueRulesFn(ctx, leagueID)
+	}
+	if m.getLeagueRulesFn != nil {
+		return m.getLeagueRulesFn(ctx, leagueID, 0)
+	}
+	return nil, nil
+}
+
+func TestCreateLeagueRulesSuccess(t *testing.T) {
 	repo := &mockLeagueRulesRepoForHandlers{
 		putLeagueRulesFn: func(_ context.Context, _ domain.LeagueRules) error { return nil },
 	}
@@ -35,11 +46,9 @@ func TestCreateLeagueRules_Success(t *testing.T) {
 		"maxStrikes": 3,
 		"maxBalls":   4,
 		"maxInnings": 7,
+		"leagueId":   "l1",
 	})
-	req := events.APIGatewayProxyRequest{
-		Body:           string(body),
-		PathParameters: map[string]string{"leagueId": "l1"},
-	}
+	req := events.APIGatewayProxyRequest{Body: string(body)}
 	resp, err := h.CreateLeagueRules(context.Background(), req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -49,7 +58,7 @@ func TestCreateLeagueRules_Success(t *testing.T) {
 	}
 }
 
-func TestCreateLeagueRules_MissingLeagueId(t *testing.T) {
+func TestCreateLeagueRulesMissingLeagueId(t *testing.T) {
 	repo := &mockLeagueRulesRepoForHandlers{}
 	h := NewLeagueRulesHandlers(repo)
 	body, _ := json.Marshal(map[string]interface{}{"maxStrikes": 3})
@@ -63,16 +72,13 @@ func TestCreateLeagueRules_MissingLeagueId(t *testing.T) {
 	}
 }
 
-func TestCreateLeagueRules_RepoError(t *testing.T) {
+func TestCreateLeagueRulesRepoError(t *testing.T) {
 	repo := &mockLeagueRulesRepoForHandlers{
 		putLeagueRulesFn: func(_ context.Context, _ domain.LeagueRules) error { return errors.New("db error") },
 	}
 	h := NewLeagueRulesHandlers(repo)
-	body, _ := json.Marshal(map[string]interface{}{"maxStrikes": 3})
-	req := events.APIGatewayProxyRequest{
-		Body:           string(body),
-		PathParameters: map[string]string{"leagueId": "l1"},
-	}
+	body, _ := json.Marshal(map[string]interface{}{"maxStrikes": 3, "leagueId": "l1"})
+	req := events.APIGatewayProxyRequest{Body: string(body)}
 	resp, err := h.CreateLeagueRules(context.Background(), req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -82,7 +88,7 @@ func TestCreateLeagueRules_RepoError(t *testing.T) {
 	}
 }
 
-func TestGetLeagueRules_Success(t *testing.T) {
+func TestGetLeagueRulesSuccess(t *testing.T) {
 	rules := &domain.LeagueRules{LeagueID: "l1", RulesVersion: 1, MaxStrikes: 3}
 	repo := &mockLeagueRulesRepoForHandlers{
 		getLeagueRulesFn: func(_ context.Context, _ string, _ int) (*domain.LeagueRules, error) {
@@ -102,7 +108,7 @@ func TestGetLeagueRules_Success(t *testing.T) {
 	}
 }
 
-func TestGetLeagueRules_MissingParams(t *testing.T) {
+func TestGetLeagueRulesMissingParams(t *testing.T) {
 	repo := &mockLeagueRulesRepoForHandlers{}
 	h := NewLeagueRulesHandlers(repo)
 	req := events.APIGatewayProxyRequest{}
@@ -115,7 +121,7 @@ func TestGetLeagueRules_MissingParams(t *testing.T) {
 	}
 }
 
-func TestGetLeagueRules_NotFound(t *testing.T) {
+func TestGetLeagueRulesNotFound(t *testing.T) {
 	repo := &mockLeagueRulesRepoForHandlers{
 		getLeagueRulesFn: func(_ context.Context, _ string, _ int) (*domain.LeagueRules, error) {
 			return nil, nil
@@ -134,7 +140,7 @@ func TestGetLeagueRules_NotFound(t *testing.T) {
 	}
 }
 
-func TestGetLeagueRules_RepoError(t *testing.T) {
+func TestGetLeagueRulesRepoError(t *testing.T) {
 	repo := &mockLeagueRulesRepoForHandlers{
 		getLeagueRulesFn: func(_ context.Context, _ string, _ int) (*domain.LeagueRules, error) {
 			return nil, errors.New("db error")
@@ -153,7 +159,7 @@ func TestGetLeagueRules_RepoError(t *testing.T) {
 	}
 }
 
-func TestGetLeagueRules_InvalidVersion(t *testing.T) {
+func TestGetLeagueRulesInvalidVersion(t *testing.T) {
 	repo := &mockLeagueRulesRepoForHandlers{}
 	h := NewLeagueRulesHandlers(repo)
 	req := events.APIGatewayProxyRequest{

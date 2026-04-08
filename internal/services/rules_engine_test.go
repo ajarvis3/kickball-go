@@ -8,7 +8,7 @@ import (
 	"github.com/ajarvis3/kickball-go/pkg/apperrors"
 )
 
-func TestValidateAtBat_Valid(t *testing.T) {
+func TestValidateAtBatValid(t *testing.T) {
 	e := NewRulesEngine()
 	game := domain.Game{}
 	rules := domain.LeagueRules{MaxStrikes: 3, MaxBalls: 4, MaxFouls: 5}
@@ -18,7 +18,7 @@ func TestValidateAtBat_Valid(t *testing.T) {
 	}
 }
 
-func TestValidateAtBat_TooManyStrikes(t *testing.T) {
+func TestValidateAtBatTooManyStrikes(t *testing.T) {
 	e := NewRulesEngine()
 	rules := domain.LeagueRules{MaxStrikes: 3}
 	atbat := domain.AtBat{Strikes: 4}
@@ -28,7 +28,7 @@ func TestValidateAtBat_TooManyStrikes(t *testing.T) {
 	}
 }
 
-func TestValidateAtBat_TooManyBalls(t *testing.T) {
+func TestValidateAtBatTooManyBalls(t *testing.T) {
 	e := NewRulesEngine()
 	rules := domain.LeagueRules{MaxBalls: 4}
 	atbat := domain.AtBat{Balls: 5}
@@ -38,7 +38,7 @@ func TestValidateAtBat_TooManyBalls(t *testing.T) {
 	}
 }
 
-func TestValidateAtBat_TooManyFouls(t *testing.T) {
+func TestValidateAtBatTooManyFouls(t *testing.T) {
 	e := NewRulesEngine()
 	rules := domain.LeagueRules{MaxFouls: 2}
 	atbat := domain.AtBat{Fouls: 3}
@@ -48,7 +48,7 @@ func TestValidateAtBat_TooManyFouls(t *testing.T) {
 	}
 }
 
-func TestValidateAtBat_ZeroMaxMeansNoLimit(t *testing.T) {
+func TestValidateAtBatZeroMaxMeansNoLimit(t *testing.T) {
 	e := NewRulesEngine()
 	rules := domain.LeagueRules{MaxStrikes: 0, MaxBalls: 0, MaxFouls: 0}
 	atbat := domain.AtBat{Strikes: 100, Balls: 100, Fouls: 100}
@@ -57,7 +57,7 @@ func TestValidateAtBat_ZeroMaxMeansNoLimit(t *testing.T) {
 	}
 }
 
-func TestDoesInningMercyApply_True(t *testing.T) {
+func TestDoesInningMercyApplyTrue(t *testing.T) {
 	e := NewRulesEngine()
 	rules := domain.LeagueRules{
 		MaxInnings:             7,
@@ -76,7 +76,7 @@ func TestDoesInningMercyApply_True(t *testing.T) {
 	}
 }
 
-func TestDoesInningMercyApply_NotLastInning_WhenMercyDoesNotApplyToLastInning(t *testing.T) {
+func TestDoesInningMercyApplyNotLastInningWhenMercyDoesNotApplyToLastInning(t *testing.T) {
 	e := NewRulesEngine()
 	rules := domain.LeagueRules{
 		MaxInnings:             7,
@@ -95,7 +95,7 @@ func TestDoesInningMercyApply_NotLastInning_WhenMercyDoesNotApplyToLastInning(t 
 	}
 }
 
-func TestDoesInningMercyApply_IdxOutOfBounds(t *testing.T) {
+func TestDoesInningMercyApplyIdxOutOfBounds(t *testing.T) {
 	e := NewRulesEngine()
 	rules := domain.LeagueRules{MaxInnings: 7, MercyRunsPerInning: 5, MercyAppliesLastInning: true}
 	game := domain.Game{State: domain.GameState{Inning: 7, InningRuns: []int{6}}}
@@ -104,7 +104,7 @@ func TestDoesInningMercyApply_IdxOutOfBounds(t *testing.T) {
 	}
 }
 
-func TestDoesInningMercyApply_NegativeIdx(t *testing.T) {
+func TestDoesInningMercyApplyNegativeIdx(t *testing.T) {
 	e := NewRulesEngine()
 	rules := domain.LeagueRules{MaxInnings: 7, MercyRunsPerInning: 5, MercyAppliesLastInning: true}
 	game := domain.Game{State: domain.GameState{Inning: 7, InningRuns: []int{6}}}
@@ -113,7 +113,7 @@ func TestDoesInningMercyApply_NegativeIdx(t *testing.T) {
 	}
 }
 
-func TestDoesInningMercyApply_BelowThreshold(t *testing.T) {
+func TestDoesInningMercyApplyBelowThreshold(t *testing.T) {
 	e := NewRulesEngine()
 	rules := domain.LeagueRules{MaxInnings: 7, MercyRunsPerInning: 5, MercyAppliesLastInning: true}
 	game := domain.Game{

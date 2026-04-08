@@ -13,8 +13,9 @@ import (
 )
 
 type mockLeagueRepo struct {
-	putLeagueFn func(ctx context.Context, league domain.League) error
-	getLeagueFn func(ctx context.Context, leagueID string) (*domain.League, error)
+	putLeagueFn   func(ctx context.Context, league domain.League) error
+	getLeagueFn   func(ctx context.Context, leagueID string) (*domain.League, error)
+	listLeaguesFn func(ctx context.Context) ([]domain.League, error)
 }
 
 func (m *mockLeagueRepo) PutLeague(ctx context.Context, league domain.League) error {
@@ -25,7 +26,11 @@ func (m *mockLeagueRepo) GetLeague(ctx context.Context, leagueID string) (*domai
 	return m.getLeagueFn(ctx, leagueID)
 }
 
-func TestCreateLeague_Success(t *testing.T) {
+func (m *mockLeagueRepo) ListLeagues(ctx context.Context) ([]domain.League, error) {
+	return m.listLeaguesFn(ctx)
+}
+
+func TestCreateLeagueSuccess(t *testing.T) {
 	repo := &mockLeagueRepo{
 		putLeagueFn: func(_ context.Context, _ domain.League) error { return nil },
 	}
@@ -41,7 +46,7 @@ func TestCreateLeague_Success(t *testing.T) {
 	}
 }
 
-func TestCreateLeague_BadJSON(t *testing.T) {
+func TestCreateLeagueBadJSON(t *testing.T) {
 	repo := &mockLeagueRepo{}
 	h := NewLeagueHandlers(repo)
 	req := events.APIGatewayProxyRequest{Body: "not json"}
@@ -54,7 +59,7 @@ func TestCreateLeague_BadJSON(t *testing.T) {
 	}
 }
 
-func TestCreateLeague_EmptyName(t *testing.T) {
+func TestCreateLeagueEmptyName(t *testing.T) {
 	repo := &mockLeagueRepo{}
 	h := NewLeagueHandlers(repo)
 	body, _ := json.Marshal(map[string]string{"name": ""})
@@ -68,7 +73,7 @@ func TestCreateLeague_EmptyName(t *testing.T) {
 	}
 }
 
-func TestCreateLeague_RepoError(t *testing.T) {
+func TestCreateLeagueRepoError(t *testing.T) {
 	repo := &mockLeagueRepo{
 		putLeagueFn: func(_ context.Context, _ domain.League) error { return errors.New("db error") },
 	}
@@ -84,7 +89,7 @@ func TestCreateLeague_RepoError(t *testing.T) {
 	}
 }
 
-func TestGetLeague_Success(t *testing.T) {
+func TestGetLeagueSuccess(t *testing.T) {
 	league := &domain.League{LeagueID: "l1", Name: "My League", CurrentRulesVersion: 1}
 	repo := &mockLeagueRepo{
 		getLeagueFn: func(_ context.Context, _ string) (*domain.League, error) { return league, nil },
@@ -102,20 +107,20 @@ func TestGetLeague_Success(t *testing.T) {
 	}
 }
 
-func TestGetLeague_MissingLeagueId(t *testing.T) {
-	repo := &mockLeagueRepo{}
+func TestGetLeagueMissingLeagueId(t *testing.T) {
+	repo := &mockLeagueRepo{listLeaguesFn: func(_ context.Context) ([]domain.League, error) { return []domain.League{}, nil }}
 	h := NewLeagueHandlers(repo)
 	req := events.APIGatewayProxyRequest{}
 	resp, err := h.GetLeague(context.Background(), req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if resp.StatusCode != http.StatusBadRequest {
-		t.Errorf("status = %d; want 400", resp.StatusCode)
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("status = %d; want 200", resp.StatusCode)
 	}
 }
 
-func TestGetLeague_NotFound(t *testing.T) {
+func TestGetLeagueNotFound(t *testing.T) {
 	repo := &mockLeagueRepo{
 		getLeagueFn: func(_ context.Context, _ string) (*domain.League, error) { return nil, nil },
 	}
@@ -132,7 +137,7 @@ func TestGetLeague_NotFound(t *testing.T) {
 	}
 }
 
-func TestGetLeague_RepoError(t *testing.T) {
+func TestGetLeagueRepoError(t *testing.T) {
 	repo := &mockLeagueRepo{
 		getLeagueFn: func(_ context.Context, _ string) (*domain.League, error) {
 			return nil, errors.New("db error")
