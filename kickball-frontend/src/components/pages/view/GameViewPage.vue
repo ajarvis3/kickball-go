@@ -1,12 +1,26 @@
 <script setup lang="ts">
-import { useRoute } from "vue-router";
-const route = useRoute();
-const id = route.params.id as string;
+import { onMounted, ref } from "vue"
+import { useRoute } from "vue-router"
+
+const route = useRoute()
+const id = route.params.id as string
+const item = ref<any>(null)
+
+onMounted(async () => {
+   try {
+      const res = await fetch(`/games/${id}`)
+      if (!res.ok) throw new Error(res.statusText)
+      item.value = await res.json()
+   } catch (err) {
+      console.error(err)
+   }
+})
 </script>
 
 <template>
    <div class="page game-view-page">
-      <h1>Game — {{ id }}</h1>
-      <p>Details will be implemented.</p>
+      <h1>Game</h1>
+      <div v-if="item">{{ item }}</div>
+      <div v-else>Loading...</div>
    </div>
 </template>
