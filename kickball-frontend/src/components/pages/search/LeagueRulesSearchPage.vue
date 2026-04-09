@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import LeagueRulesSearch from "../../search/LeagueRulesSearch.vue";
+import LeagueRulesSearch from "./searcher/LeagueRulesSearch.vue";
 </script>
 
 <template>

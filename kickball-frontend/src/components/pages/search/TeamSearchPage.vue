@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import TeamSearch from "../../search/TeamSearch.vue";
+import TeamSearch from "./searcher/TeamSearch.vue";
 </script>
 
 <template>

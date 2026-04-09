@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import AtBatSearch from "../../search/AtBatSearch.vue";
+import AtBatSearch from "./searcher/AtBatSearch.vue";
 </script>
 
 <template>

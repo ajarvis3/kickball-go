@@ -1,21 +1,25 @@
 <script setup lang="ts">
 import { reactive, toRefs, ref } from "vue";
-import { fetchSearch } from "../../utility/fetchSearch";
+import { fetchSearch } from "../../../utility/fetchSearch";
 
-const state = reactive({ leagueId: "", leagueName: "" });
-const { leagueId, leagueName } = toRefs(state);
+// version left as string here; parent can parse to int when making requests
+const state = reactive({ leagueId: "", version: "" });
+const { leagueId, version } = toRefs(state);
 
 const results = ref<any[]>([]);
 const loading = ref(false);
 
 async function doSearch() {
-   // if neither provided, list all leagues
+   if (!leagueId.value) {
+      results.value = [{ error: "leagueId required" }];
+      return;
+   }
    loading.value = true;
    try {
       const params = new URLSearchParams();
-      if (leagueId.value) params.append("leagueId", leagueId.value);
-      if (leagueName.value) params.append("leagueName", leagueName.value);
-      results.value = await fetchSearch("leagues", params);
+      params.append("leagueId", leagueId.value);
+      if (version.value) params.append("version", version.value);
+      results.value = await fetchSearch("leaguerules", params);
    } catch (e) {
       results.value = [{ error: String(e) }];
    } finally {
@@ -27,7 +31,7 @@ async function doSearch() {
 <template>
    <div class="search">
       <SearchItem v-model="leagueId" />
-      <SearchItem v-model="leagueName" />
+      <SearchItem v-model="version" />
       <button @click="doSearch" :disabled="loading">Search</button>
       <pre>{{ JSON.stringify(results, null, 2) }}</pre>
    </div>

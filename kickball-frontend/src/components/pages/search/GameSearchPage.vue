@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import GameSearch from "../../search/GameSearch.vue";
+import GameSearch from "./searcher/GameSearch.vue";
 </script>
 
 <template>
