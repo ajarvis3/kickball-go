@@ -16,6 +16,7 @@ type AtbatItem struct {
 	Result           string `dynamodbav:"result"`
 	RBI              int    `dynamodbav:"rbi"`
 	Pitches          int    `dynamodbav:"pitches"`
+	
 	GSIPlayerAtBatPK string `dynamodbav:"GSIPlayerAtBatPK"`
 	GSIPlayerAtBatSK string `dynamodbav:"GSIPlayerAtBatSK"`
 }

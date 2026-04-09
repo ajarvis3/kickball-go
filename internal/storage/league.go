@@ -6,4 +6,7 @@ type LeagueItem struct {
 	LeagueID            string `dynamodbav:"leagueId"`
 	Name                string `dynamodbav:"name"`
 	CurrentRulesVersion int    `dynamodbav:"currentRulesVersion"`
+	
+	GSILeagueNamePK string `dynamodbav:"GSILeagueNamePK"`
+	GSILeagueNameSK string `dynamodbav:"GSILeagueNameSK"`
 }

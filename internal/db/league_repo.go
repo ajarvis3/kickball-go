@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"github.com/ajarvis3/kickball-go/pkg/apperrors"
 
@@ -21,6 +22,7 @@ type LeagueRepository interface {
 	PutLeague(ctx context.Context, league domain.League) error
 	GetLeague(ctx context.Context, leagueID string) (*domain.League, error)
 	ListLeagues(ctx context.Context) ([]domain.League, error)
+	ListLeaguesByName(ctx context.Context, namePrefix string) ([]domain.League, error)
 }
 
 type leagueRepo struct {
@@ -88,6 +90,33 @@ func (r *leagueRepo) ListLeagues(ctx context.Context) ([]domain.League, error) {
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":pkprefix": &types.AttributeValueMemberS{Value: "LEAGUE#"},
 			":skprefix": &types.AttributeValueMemberS{Value: "LEAGUE#"},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var leagues []domain.League
+	for _, it := range out.Items {
+		var stored storage.LeagueItem
+		if err := attributevalue.UnmarshalMap(it, &stored); err != nil {
+			return nil, err
+		}
+		leagues = append(leagues, mappers.ItemToLeague(stored))
+	}
+	return leagues, nil
+}
+
+func (r *leagueRepo) ListLeaguesByName(ctx context.Context, namePrefix string) ([]domain.League, error) {
+	// Query the GSI that stores lowercase league names to support prefix search
+	expr := "GSILeagueNamePK = :pk AND begins_with(GSILeagueNameSK, :prefix)"
+	out, err := r.client.ddb.Query(ctx, &dynamodb.QueryInput{
+		TableName:              aws.String(r.client.tableName),
+		IndexName:              aws.String("GSILeagueByName"),
+		KeyConditionExpression: aws.String(expr),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":pk":     &types.AttributeValueMemberS{Value: "LEAGUE_NAME"},
+			":prefix": &types.AttributeValueMemberS{Value: strings.ToLower(namePrefix)},
 		},
 	})
 	if err != nil {

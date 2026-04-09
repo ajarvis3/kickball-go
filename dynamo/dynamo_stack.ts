@@ -57,6 +57,23 @@ export class KickballStack extends cdk.Stack {
          projectionType: dynamodb.ProjectionType.ALL,
       });
 
+      // GSI: Leagues by name (supports prefix search on lowercase name)
+      // - IndexName: GSILeagueByName
+      // - Partition key: GSILeagueNamePK = "LEAGUE_NAME"
+      // - Sort key:      GSILeagueNameSK = <lowercase league name>
+      table.addGlobalSecondaryIndex({
+         indexName: "GSILeagueByName",
+         partitionKey: {
+            name: "GSILeagueNamePK",
+            type: dynamodb.AttributeType.STRING,
+         },
+         sortKey: {
+            name: "GSILeagueNameSK",
+            type: dynamodb.AttributeType.STRING,
+         },
+         projectionType: dynamodb.ProjectionType.ALL,
+      });
+
       // Export table name for Lambdas / other stacks
       new cdk.CfnOutput(this, "KickballTableName", {
          value: table.tableName,

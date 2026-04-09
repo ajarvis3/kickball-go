@@ -16,6 +16,7 @@ type mockLeagueRepo struct {
 	putLeagueFn   func(ctx context.Context, league domain.League) error
 	getLeagueFn   func(ctx context.Context, leagueID string) (*domain.League, error)
 	listLeaguesFn func(ctx context.Context) ([]domain.League, error)
+	listLeaguesByNameFn func(ctx context.Context, namePrefix string) ([]domain.League, error)
 }
 
 func (m *mockLeagueRepo) PutLeague(ctx context.Context, league domain.League) error {
@@ -28,6 +29,16 @@ func (m *mockLeagueRepo) GetLeague(ctx context.Context, leagueID string) (*domai
 
 func (m *mockLeagueRepo) ListLeagues(ctx context.Context) ([]domain.League, error) {
 	return m.listLeaguesFn(ctx)
+}
+
+func (m *mockLeagueRepo) ListLeaguesByName(ctx context.Context, namePrefix string) ([]domain.League, error) {
+	if m.listLeaguesByNameFn != nil {
+		return m.listLeaguesByNameFn(ctx, namePrefix)
+	}
+	if m.listLeaguesFn != nil {
+		return m.listLeaguesFn(ctx)
+	}
+	return []domain.League{}, nil
 }
 
 func TestCreateLeagueSuccess(t *testing.T) {
