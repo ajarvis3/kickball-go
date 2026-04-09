@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/google/uuid"
@@ -42,15 +43,28 @@ func (h *LeagueHandlers) CreateLeague(ctx context.Context, req events.APIGateway
 
 func (h *LeagueHandlers) GetLeague(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	leagueID := req.QueryStringParameters["leagueId"]
+	leagueName := req.QueryStringParameters["leagueName"]
 	if leagueID == "" {
-		// No leagueId provided -> return all leagues
+		// No leagueId provided -> return all leagues (optionally filter by leagueName)
 		leagues, err := h.Leagues.ListLeagues(ctx)
 		if err != nil {
 			return responses.JsonResponse(http.StatusInternalServerError, map[string]string{"error": err.Error()}), nil
 		}
 		var out []dto.LeagueResponse
+		// TODO update this to use a GSI
+		if leagueName == "" {
+			for _, l := range leagues {
+				out = append(out, mappers.LeagueToResponse(l))
+			}
+			return responses.JsonResponse(http.StatusOK, out), nil
+		}
+
+		// filter by name (case-insensitive, substring match)
+		q := strings.ToLower(leagueName)
 		for _, l := range leagues {
-			out = append(out, mappers.LeagueToResponse(l))
+			if strings.Contains(strings.ToLower(l.Name), q) {
+				out = append(out, mappers.LeagueToResponse(l))
+			}
 		}
 		return responses.JsonResponse(http.StatusOK, out), nil
 	}

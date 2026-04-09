@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
+// App shell: router-view renders the active page
 </script>
 
 <template>
-  <HelloWorld />
+   <router-view />
 </template>
