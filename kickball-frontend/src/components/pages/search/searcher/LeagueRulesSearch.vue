@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { reactive, toRefs, ref } from "vue";
-import { fetchSearch } from "../../../utility/fetchSearch";
+import { fetchSearch } from "../../../../utility/fetchSearch";
+import SearchItem from "./SearchItem.vue";
 
 // version left as string here; parent can parse to int when making requests
 const state = reactive({ leagueId: "", version: "" });
@@ -32,7 +33,7 @@ async function doSearch() {
    <div class="search">
       <SearchItem v-model="leagueId" />
       <SearchItem v-model="version" />
-      <button @click="doSearch" :disabled="loading">Search</button>
+      <q-btn color="primary" label="Search" @click="doSearch" :loading="loading" />
       <pre>{{ JSON.stringify(results, null, 2) }}</pre>
    </div>
 </template>

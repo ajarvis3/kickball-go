@@ -46,7 +46,9 @@ onMounted(async () => {
    <div class="page umpire-game-dashboard">
       <h1>Umpire — Game Dashboard</h1>
 
-      <div v-if="loading">Loading game and at-bats...</div>
+      <div v-if="loading" class="flex flex-center q-pa-md">
+         <q-spinner size="3em" color="primary" />
+      </div>
       <div v-else-if="error">Error: {{ error }}</div>
 
       <section v-else>
