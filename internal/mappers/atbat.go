@@ -1,9 +1,10 @@
 package mappers
 
 import (
-	"github.com/ajarvis3/kickball-go/internal/domain"
+	"github.com/ajarvis3/kickball-go/internal/data/domain"
+	"github.com/ajarvis3/kickball-go/internal/data/storage"
 	"github.com/ajarvis3/kickball-go/internal/keys"
-	"github.com/ajarvis3/kickball-go/internal/storage"
+	"github.com/ajarvis3/kickball-go/internal/types"
 )
 
 func AtbatToItem(a domain.AtBat) storage.AtbatItem {
@@ -16,7 +17,7 @@ func AtbatToItem(a domain.AtBat) storage.AtbatItem {
 		PlayerID:         a.PlayerID,
 		Seq:              a.Seq,
 		Inning:           a.Inning,
-		Half:             a.Half,
+		Half:             string(a.Half),
 		Strikes:          a.Strikes,
 		Balls:            a.Balls,
 		Fouls:            a.Fouls,
@@ -36,7 +37,7 @@ func ItemToAtbat(it storage.AtbatItem) domain.AtBat {
 		PlayerID: it.PlayerID,
 		Seq:      it.Seq,
 		Inning:   it.Inning,
-		Half:     it.Half,
+		Half:     types.Half(it.Half),
 		Strikes:  it.Strikes,
 		Balls:    it.Balls,
 		Fouls:    it.Fouls,

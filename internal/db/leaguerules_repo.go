@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/ajarvis3/kickball-go/internal/domain"
+	"github.com/ajarvis3/kickball-go/internal/data/domain"
+	"github.com/ajarvis3/kickball-go/internal/data/storage"
 	"github.com/ajarvis3/kickball-go/internal/keys"
 	"github.com/ajarvis3/kickball-go/internal/mappers"
-	"github.com/ajarvis3/kickball-go/internal/storage"
 	"github.com/ajarvis3/kickball-go/pkg/apperrors"
 
 	"github.com/aws/aws-sdk-go-v2/aws"

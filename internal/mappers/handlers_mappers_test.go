@@ -3,8 +3,8 @@ package mappers
 import (
 	"testing"
 
-	"github.com/ajarvis3/kickball-go/internal/domain"
-	"github.com/ajarvis3/kickball-go/internal/handlers/dto"
+	"github.com/ajarvis3/kickball-go/internal/data/domain"
+	dto "github.com/ajarvis3/kickball-go/internal/data/dto"
 )
 
 func TestRecordAtBatRequestToDomain(t *testing.T) {

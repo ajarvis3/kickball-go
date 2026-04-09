@@ -18,6 +18,8 @@ const TeamView = () => import("../components/pages/view/TeamViewPage.vue");
 const LeagueView = () => import("../components/pages/view/LeagueViewPage.vue");
 const LeagueRulesView = () =>
    import("../components/pages/view/LeagueRulesViewPage.vue");
+const UmpireGameDashboard = () =>
+   import("../components/pages/dashboard/UmpireGameDashboard.vue");
 
 const routes = [
    { path: "/", name: "home", component: HelloWorld },
@@ -32,7 +34,12 @@ const routes = [
    { path: "/games/:id", name: "game-view", component: GameView, props: true },
    { path: "/players", name: "players", component: PlayerPage },
    {
-      path: "/players/:id",
+      path: "/games/:id/umpire",
+      name: "umpire-game",
+      component: UmpireGameDashboard,
+      props: true,
+   },
+   { path: "/players/:id",
       name: "player-view",
       component: PlayerView,
       props: true,

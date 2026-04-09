@@ -4,11 +4,12 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/ajarvis3/kickball-go/internal/domain"
+	"github.com/ajarvis3/kickball-go/internal/data/domain"
+	"github.com/ajarvis3/kickball-go/internal/types"
 	"github.com/ajarvis3/kickball-go/pkg/apperrors"
 )
 
-func makeGame(homeTeam, awayTeam string, inning int, half string, outs, homeScore, awayScore int, maxInnings int) domain.Game {
+func makeGame(homeTeam, awayTeam string, inning int, half types.Half, outs, homeScore, awayScore int, maxInnings int) domain.Game {
 	return domain.Game{
 		GameID:     "g1",
 		LeagueID:   "l1",
@@ -51,7 +52,7 @@ func TestApplyAtBatNilRules(t *testing.T) {
 
 func TestApplyAtBatInvalidStrikeCount(t *testing.T) {
 	e := NewGameEngine(NewRulesEngine())
-	game := makeGame("ht", "at", 1, "top", 0, 0, 0, 7)
+	game := makeGame("ht", "at", 1, types.HalfTop, 0, 0, 0, 7)
 	rules := makeRules(7)
 	atbat := domain.AtBat{TeamID: "ht", Strikes: 10, Result: "strikeout"}
 	_, err := e.ApplyAtBat(game, rules, atbat)
@@ -62,7 +63,7 @@ func TestApplyAtBatInvalidStrikeCount(t *testing.T) {
 
 func TestApplyAtBatSingleWithRBI(t *testing.T) {
 	e := NewGameEngine(NewRulesEngine())
-	game := makeGame("ht", "at", 1, "top", 0, 0, 0, 7)
+	game := makeGame("ht", "at", 1, types.HalfTop, 0, 0, 0, 7)
 	rules := makeRules(7)
 	atbat := domain.AtBat{TeamID: "ht", Result: "single", RBI: 2}
 	updated, err := e.ApplyAtBat(game, rules, atbat)
@@ -79,7 +80,7 @@ func TestApplyAtBatSingleWithRBI(t *testing.T) {
 
 func TestApplyAtBatOutIncrementsOuts(t *testing.T) {
 	e := NewGameEngine(NewRulesEngine())
-	game := makeGame("ht", "at", 1, "top", 0, 0, 0, 7)
+	game := makeGame("ht", "at", 1, types.HalfTop, 0, 0, 0, 7)
 	rules := makeRules(7)
 	atbat := domain.AtBat{TeamID: "ht", Result: "out"}
 	updated, err := e.ApplyAtBat(game, rules, atbat)
@@ -93,7 +94,7 @@ func TestApplyAtBatOutIncrementsOuts(t *testing.T) {
 
 func TestApplyAtBatThreeOutsAdvancesTopToBottom(t *testing.T) {
 	e := NewGameEngine(NewRulesEngine())
-	game := makeGame("ht", "at", 1, "top", 2, 0, 0, 7)
+	game := makeGame("ht", "at", 1, types.HalfTop, 2, 0, 0, 7)
 	rules := makeRules(7)
 	atbat := domain.AtBat{TeamID: "ht", Result: "out"}
 	updated, err := e.ApplyAtBat(game, rules, atbat)
@@ -113,7 +114,7 @@ func TestApplyAtBatThreeOutsAdvancesTopToBottom(t *testing.T) {
 
 func TestApplyAtBatThreeOutsAtBottomAdvancesToNextInning(t *testing.T) {
 	e := NewGameEngine(NewRulesEngine())
-	game := makeGame("ht", "at", 1, "bottom", 2, 0, 0, 7)
+	game := makeGame("ht", "at", 1, types.HalfBottom, 2, 0, 0, 7)
 	rules := makeRules(7)
 	atbat := domain.AtBat{TeamID: "at", Result: "out"}
 	updated, err := e.ApplyAtBat(game, rules, atbat)
@@ -133,7 +134,7 @@ func TestApplyAtBatThreeOutsAtBottomAdvancesToNextInning(t *testing.T) {
 
 func TestApplyAtBatDoublePlayAddsTwoOuts(t *testing.T) {
 	e := NewGameEngine(NewRulesEngine())
-	game := makeGame("ht", "at", 1, "top", 0, 0, 0, 7)
+	game := makeGame("ht", "at", 1, types.HalfTop, 0, 0, 0, 7)
 	rules := makeRules(7)
 	atbat := domain.AtBat{TeamID: "ht", Result: "doubleplay"}
 	updated, err := e.ApplyAtBat(game, rules, atbat)
@@ -147,7 +148,7 @@ func TestApplyAtBatDoublePlayAddsTwoOuts(t *testing.T) {
 
 func TestApplyAtBatTriplePlayAddsThreeOuts(t *testing.T) {
 	e := NewGameEngine(NewRulesEngine())
-	game := makeGame("ht", "at", 1, "top", 0, 0, 0, 7)
+	game := makeGame("ht", "at", 1, types.HalfTop, 0, 0, 0, 7)
 	rules := makeRules(7)
 	atbat := domain.AtBat{TeamID: "ht", Result: "tripleplay"}
 	updated, err := e.ApplyAtBat(game, rules, atbat)
@@ -175,7 +176,7 @@ func TestApplyAtBatGameMercyRuleTriggered(t *testing.T) {
 		AwayTeamID: "at",
 		State: domain.GameState{
 			Inning:     3,
-			Half:       "top",
+			Half:       types.HalfTop,
 			Outs:       0,
 			HomeScore:  0,
 			AwayScore:  0,
@@ -213,7 +214,7 @@ func TestApplyAtBatAwayTeamScores(t *testing.T) {
 
 func TestApplyAtBatStrikeoutIncrementsOuts(t *testing.T) {
 	e := NewGameEngine(NewRulesEngine())
-	game := makeGame("ht", "at", 1, "top", 1, 0, 0, 7)
+	game := makeGame("ht", "at", 1, types.HalfTop, 1, 0, 0, 7)
 	rules := makeRules(7)
 	atbat := domain.AtBat{TeamID: "ht", Result: "strikeout"}
 	updated, err := e.ApplyAtBat(game, rules, atbat)

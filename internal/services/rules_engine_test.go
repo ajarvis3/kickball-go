@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/ajarvis3/kickball-go/internal/domain"
+	"github.com/ajarvis3/kickball-go/internal/data/domain"
 	"github.com/ajarvis3/kickball-go/pkg/apperrors"
 )
 

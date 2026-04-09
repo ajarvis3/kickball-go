@@ -1,8 +1,9 @@
 package mappers
 
 import (
-	"github.com/ajarvis3/kickball-go/internal/domain"
-	dto "github.com/ajarvis3/kickball-go/internal/handlers/dto"
+	"github.com/ajarvis3/kickball-go/internal/data/domain"
+	dto "github.com/ajarvis3/kickball-go/internal/data/dto"
+	"github.com/ajarvis3/kickball-go/internal/types"
 )
 
 // AtBat mappers
@@ -14,7 +15,7 @@ func RecordAtBatRequestToDomain(r dto.RecordAtBatRequest, gameID, leagueID strin
 		PlayerID: r.PlayerID,
 		Seq:      1,
 		Inning:   0,
-		Half:     "",
+		Half:     types.Half(""),
 		Strikes:  r.Strikes,
 		Balls:    r.Balls,
 		Fouls:    r.Fouls,

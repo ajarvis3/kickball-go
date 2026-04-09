@@ -3,9 +3,9 @@ package mappers
 import (
 	"testing"
 
-	"github.com/ajarvis3/kickball-go/internal/domain"
+	"github.com/ajarvis3/kickball-go/internal/data/domain"
+	"github.com/ajarvis3/kickball-go/internal/data/storage"
 	"github.com/ajarvis3/kickball-go/internal/keys"
-	"github.com/ajarvis3/kickball-go/internal/storage"
 )
 
 func TestLineupToItem(t *testing.T) {

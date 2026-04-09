@@ -9,7 +9,7 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 
-	"github.com/ajarvis3/kickball-go/internal/domain"
+	"github.com/ajarvis3/kickball-go/internal/data/domain"
 )
 
 // mockLeagueRulesRepoForHandlers is a local mock (distinct name to avoid conflicts within same package).

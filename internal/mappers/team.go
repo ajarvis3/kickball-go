@@ -1,9 +1,9 @@
 package mappers
 
 import (
-	"github.com/ajarvis3/kickball-go/internal/domain"
+	"github.com/ajarvis3/kickball-go/internal/data/domain"
+	"github.com/ajarvis3/kickball-go/internal/data/storage"
 	"github.com/ajarvis3/kickball-go/internal/keys"
-	"github.com/ajarvis3/kickball-go/internal/storage"
 )
 
 func TeamToItem(t domain.Team) storage.TeamItem {

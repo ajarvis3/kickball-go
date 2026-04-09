@@ -8,10 +8,11 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/google/uuid"
 
+	"github.com/ajarvis3/kickball-go/internal/data/domain"
+	dto "github.com/ajarvis3/kickball-go/internal/data/dto"
 	"github.com/ajarvis3/kickball-go/internal/db"
-	"github.com/ajarvis3/kickball-go/internal/domain"
-	"github.com/ajarvis3/kickball-go/internal/handlers/dto"
 	"github.com/ajarvis3/kickball-go/internal/mappers"
+	"github.com/ajarvis3/kickball-go/internal/types"
 	"github.com/ajarvis3/kickball-go/pkg/responses"
 )
 
@@ -47,7 +48,7 @@ func (h *GameHandlers) CreateGame(ctx context.Context, req events.APIGatewayProx
 	}
 
 	game.State.Inning = 1
-	game.State.Half = "top"
+	game.State.Half = types.HalfTop
 	game.State.Outs = 0
 	if lr.MaxInnings > 0 {
 		game.State.InningRuns = make([]int, 2*lr.MaxInnings)

@@ -3,7 +3,8 @@ package services
 import (
 	"strings"
 
-	"github.com/ajarvis3/kickball-go/internal/domain"
+	"github.com/ajarvis3/kickball-go/internal/data/domain"
+	"github.com/ajarvis3/kickball-go/internal/types"
 	"github.com/ajarvis3/kickball-go/pkg/apperrors"
 )
 
@@ -34,7 +35,7 @@ func (e *GameEngine) ApplyAtBat(game domain.Game, rules domain.LeagueRules, atba
 
 	// map inning/half -> index: (inning-1)*2 + (0 for top, 1 for bottom)
 	idx := (game.State.Inning - 1) * 2
-	if strings.ToLower(game.State.Half) == "bottom" {
+	if game.State.Half == types.HalfBottom {
 		idx += 1
 	}
 
@@ -67,7 +68,7 @@ func (e *GameEngine) ApplyAtBat(game domain.Game, rules domain.LeagueRules, atba
 		if game.State.HomeScore-game.State.AwayScore >= rules.GameMercyRuns || game.State.AwayScore-game.State.HomeScore >= rules.GameMercyRuns {
 			game.State.Inning = rules.MaxInnings + 1
 			game.State.Outs = 0
-			game.State.Half = ""
+			game.State.Half = types.Half("")
 		}
 	}
 
@@ -81,10 +82,10 @@ func advanceInning(g *domain.Game) {
 		return
 	}
 	g.State.Outs = 0
-	if g.State.Half == "top" {
-		g.State.Half = "bottom"
+	if g.State.Half == types.HalfTop {
+		g.State.Half = types.HalfBottom
 	} else {
-		g.State.Half = "top"
+		g.State.Half = types.HalfTop
 		g.State.Inning += 1
 	}
 }

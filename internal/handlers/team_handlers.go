@@ -8,8 +8,8 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/google/uuid"
 
+	dto "github.com/ajarvis3/kickball-go/internal/data/dto"
 	"github.com/ajarvis3/kickball-go/internal/db"
-	"github.com/ajarvis3/kickball-go/internal/handlers/dto"
 	"github.com/ajarvis3/kickball-go/internal/mappers"
 	"github.com/ajarvis3/kickball-go/pkg/responses"
 )
