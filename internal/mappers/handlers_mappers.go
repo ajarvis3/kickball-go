@@ -123,6 +123,7 @@ func GameToResponse(g domain.Game) dto.GameResponse {
 			Outs:      g.State.Outs,
 			HomeScore: g.State.HomeScore,
 			AwayScore: g.State.AwayScore,
+			InningRuns: g.State.InningRuns,
 		},
 	}
 }

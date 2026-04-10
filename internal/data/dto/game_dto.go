@@ -24,4 +24,5 @@ type GameStateDTO struct {
     Outs      int         `json:"outs"`
     HomeScore int         `json:"homeScore"`
     AwayScore int         `json:"awayScore"`
+    InningRuns []int      `json:"inningRuns,omitempty"`
 }

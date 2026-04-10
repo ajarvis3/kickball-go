@@ -19,7 +19,7 @@ const LeagueView = () => import("../components/pages/view/LeagueViewPage.vue");
 const LeagueRulesView = () =>
    import("../components/pages/view/LeagueRulesViewPage.vue");
 const UmpireGameDashboard = () =>
-   import("../components/pages/dashboard/UmpireGameDashboard.vue");
+   import("../components/pages/dashboard/umpire/UmpireGameDashboard.vue");
 
 const routes = [
    { path: "/", name: "home", component: HelloWorld },
@@ -39,7 +39,8 @@ const routes = [
       component: UmpireGameDashboard,
       props: true,
    },
-   { path: "/players/:id",
+   {
+      path: "/players/:id",
       name: "player-view",
       component: PlayerView,
       props: true,
