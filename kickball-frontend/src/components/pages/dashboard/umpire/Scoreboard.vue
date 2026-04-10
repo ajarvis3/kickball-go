@@ -93,8 +93,4 @@ const rows = computed(() => {
    </div>
 </template>
 
-<style scoped>
-.scoreboard-component {
-   width: 100%;
-}
-</style>
+<!-- removed component styles to rely on Quasar defaults -->

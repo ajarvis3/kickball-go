@@ -159,13 +159,4 @@ onMounted(async () => {
    </div>
 </template>
 
-<style scoped>
-.row {
-   display: flex;
-   align-items: center;
-   gap: 8px;
-}
-.text-caption {
-   color: rgba(0, 0, 0, 0.6);
-}
-</style>
+<!-- removed component styles to rely on Quasar defaults -->

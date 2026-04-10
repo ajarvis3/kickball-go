@@ -25,11 +25,4 @@ const props = defineProps<{
    </div>
 </template>
 
-<style scoped>
-.text-caption {
-   color: var(--text);
-}
-.text-subtitle2 {
-   color: var(--text);
-}
-</style>
+<!-- removed component styles to rely on Quasar defaults -->

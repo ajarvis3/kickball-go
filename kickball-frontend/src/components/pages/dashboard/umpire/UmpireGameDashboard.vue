@@ -159,17 +159,4 @@ onMounted(async () => {
    </div>
 </template>
 
-<style scoped>
-.global-spinner-overlay {
-   position: fixed;
-   top: 0;
-   left: 0;
-   right: 0;
-   bottom: 0;
-   display: flex;
-   align-items: center;
-   justify-content: center;
-   background: rgba(255, 255, 255, 0.7);
-   z-index: 2000;
-}
-</style>
+<!-- removed component styles to rely on Quasar defaults -->

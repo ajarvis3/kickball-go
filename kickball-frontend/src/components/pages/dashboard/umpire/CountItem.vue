@@ -29,7 +29,4 @@ const inc = () => {
   </div>
 </template>
 
-<style scoped>
-.count-item { display: inline-flex; align-items: center; gap: 8px; }
-label { margin-right: 8px; }
-</style>
+<!-- removed component styles to rely on Quasar defaults -->

@@ -20,6 +20,4 @@ const props = defineProps<{ game: any }>();
   </q-expansion-item>
 </template>
 
-<style scoped>
-.q-ml-sm { margin-left: 8px; }
-</style>
+<!-- removed component styles to rely on Quasar defaults -->

@@ -80,8 +80,4 @@ function onConfirm() {
    </section>
 </template>
 
-<style scoped>
-.atbat-controls > div {
-   margin-bottom: 0.5rem;
-}
-</style>
+<!-- removed component styles to rely on Quasar defaults -->

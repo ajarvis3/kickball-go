@@ -76,14 +76,4 @@ onMounted(async () => {
    </div>
 </template>
 
-<style scoped>
-.global-spinner-overlay {
-   display: flex;
-   align-items: center;
-   justify-content: center;
-   padding: 2rem;
-}
-.scoreboard {
-   margin-bottom: 1rem;
-}
-</style>
+<!-- removed component styles to rely on Quasar defaults -->
