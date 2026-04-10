@@ -8,49 +8,18 @@ const props = defineProps<{
 
 // compute inningsCount based on game state and atbats
 const inningsCount = computed(() => {
-   let max = 0;
-   if (props.game?.state?.inning) max = props.game.state.inning;
-   for (const a of props.atbats || []) {
-      if (a?.inning > max) max = a.inning;
-   }
-   return Math.max(1, max);
+   return props.game?.state.inningRuns.length / 2;
 });
 
 const innings = computed(() =>
    Array.from({ length: inningsCount.value }, (_, i) => i + 1),
 );
 
-const computeRunsFromBackend = (isAway: boolean) => {
-   const ir = props.game?.state?.inningRuns;
-   const count = inningsCount.value;
-   if (!Array.isArray(ir) || ir.length === 0) return null;
-   const out = Array(count).fill(0);
-   for (let i = 0; i < count; i++) {
-      const idx = isAway ? i * 2 : i * 2 + 1;
-      if (idx < ir.length) out[i] = ir[idx] || 0;
-   }
-   return out;
-};
-
-const computeRunsFromAtBats = (isAway: boolean) => {
-   const count = inningsCount.value;
-   const arr = Array(count).fill(0);
-   for (const a of props.atbats || []) {
-      const idx = Math.max(0, Math.min(count - 1, (a.inning || 1) - 1));
-      if (!props.game || !a.teamId) continue;
-      const matches = isAway
-         ? a.teamId === props.game.awayTeamId
-         : a.teamId === props.game.homeTeamId;
-      if (matches) arr[idx] += a.rbi || 0;
-   }
-   return arr;
-};
-
-const awayRuns = computed(
-   () => computeRunsFromBackend(true) ?? computeRunsFromAtBats(true),
+const awayRuns = computed(() =>
+   props.game?.state?.inningRuns?.filter((_, index: number) => index % 2 === 0),
 );
-const homeRuns = computed(
-   () => computeRunsFromBackend(false) ?? computeRunsFromAtBats(false),
+const homeRuns = computed(() =>
+   props.game?.state?.inningRuns?.filter((_, index: number) => index % 2 === 1),
 );
 
 const awayTotal = computed(() =>
@@ -61,22 +30,37 @@ const homeTotal = computed(() =>
 );
 
 const columns = computed(() => {
-   const cols: any[] = [{ name: "team", label: "" }];
+   const cols: any[] = [
+      {
+         name: "team",
+         label: "Team",
+         field: "team",
+         style: "width: 180px; max-width: 180px;",
+         headerStyle: "width: 180px;",
+      },
+   ];
    for (const i of innings.value)
-      cols.push({ name: `i${i}`, label: String(i) });
-   cols.push({ name: "R", label: "R" });
+      cols.push({ name: `i${i}`, label: String(i), field: `i${i}` });
+   cols.push({ name: "Final", label: "Final", field: "Final" });
    return cols;
 });
 
 const rows = computed(() => {
    const away: any = { team: props.game?.awayTeamId || "Away" };
    const home: any = { team: props.game?.homeTeamId || "Home" };
+   console.log(
+      `away: ${JSON.stringify(awayRuns.value)}, home: ${JSON.stringify(homeRuns.value)}`,
+   );
    for (let i = 0; i < innings.value.length; i++) {
+      console.log(
+         `i ${i + 1}: away ${awayRuns.value[i] ?? 0}, home ${homeRuns.value[i] ?? 0}`,
+      );
       away[`i${i + 1}`] = awayRuns.value[i] ?? 0;
       home[`i${i + 1}`] = homeRuns.value[i] ?? 0;
    }
-   away.R = awayTotal.value;
-   home.R = homeTotal.value;
+   away.Final = awayTotal.value;
+   home.Final = homeTotal.value;
+   console.log(away);
    return [away, home];
 });
 </script>
@@ -86,8 +70,9 @@ const rows = computed(() => {
       <q-table
          :columns="columns"
          :rows="rows"
+         row-key="team"
          flat
-         table-layout="auto"
+         table-layout="fixed"
          hide-bottom
       />
    </div>

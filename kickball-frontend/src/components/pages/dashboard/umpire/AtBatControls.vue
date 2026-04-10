@@ -48,9 +48,7 @@ function onConfirm() {
             @click="showConfirmDialog = true"
             :loading="props.posting"
             :disable="
-               props.posting ||
-               !model.selectedOutcome ||
-               !props.currentTeamId
+               props.posting || !model.selectedOutcome || !props.currentTeamId
             "
             >Post Outcome</q-btn
          >

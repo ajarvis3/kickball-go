@@ -2,31 +2,31 @@
 const model = defineModel({ type: Number, default: 0 });
 
 const props = defineProps<{
-  label?: string;
-  min?: number;
+   label?: string;
+   min?: number;
 }>();
 
 const dec = () => {
-  const current = model.value ?? 0;
-  const next = Math.max(props.min ?? 0, current - 1);
-  model.value = next;
+   const current = model.value ?? 0;
+   const next = Math.max(props.min ?? 0, current - 1);
+   model.value = next;
 };
 
 const inc = () => {
-  const current = model.value ?? 0;
-  model.value = current + 1;
+   const current = model.value ?? 0;
+   model.value = current + 1;
 };
 </script>
 
 <template>
-  <div class="count-item">
-    <label>{{ label }}</label>
-    <q-btn-group>
-      <q-btn flat color="primary" icon="remove" @click="dec" />
-      <div class="q-pa-xs">{{ model }}</div>
-      <q-btn flat color="primary" icon="add" @click="inc" />
-    </q-btn-group>
-  </div>
+   <div class="count-item">
+      <label>{{ label }}</label>
+      <q-btn-group>
+         <q-btn flat color="primary" icon="remove" @click="dec" />
+         <div class="q-pa-xs">{{ model }}</div>
+         <q-btn flat color="primary" icon="add" @click="inc" />
+      </q-btn-group>
+   </div>
 </template>
 
 <!-- removed component styles to rely on Quasar defaults -->

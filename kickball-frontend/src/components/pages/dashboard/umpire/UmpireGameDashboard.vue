@@ -54,13 +54,14 @@ function resetState(
 }
 
 async function postAtBat() {
-   if (!atBatForm.selectedOutcome || !game.value) return;
+   if (!atBatForm.selectedOutcome || !game.value || !currentTeamId.value)
+      return;
    posting.value = true;
    const payload = {
       gameId: gameId,
       leagueId: game.value.leagueId,
       playerId: atBatForm.playerId,
-      //   teamId: currentTeamId.value,
+      teamId: currentTeamId.value,
       strikes: strikes.value,
       balls: balls.value,
       fouls: fouls.value,
