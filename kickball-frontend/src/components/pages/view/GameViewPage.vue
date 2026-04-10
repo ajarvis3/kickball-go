@@ -21,6 +21,8 @@ onMounted(async () => {
    <div class="page game-view-page">
       <h1>Game</h1>
       <div v-if="item">{{ item }}</div>
-      <div v-else>Loading...</div>
+      <div v-else class="flex flex-center q-pa-md">
+         <q-spinner size="3em" color="primary" />
+      </div>
    </div>
 </template>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { reactive, toRefs, ref } from "vue";
-import { fetchSearch } from "../../../utility/fetchSearch";
+import { fetchSearch } from "../../../../utility/fetchSearch";
+import SearchItem from "./SearchItem.vue";
 
 const state = reactive({ gameId: "", leagueId: "" });
 const { gameId, leagueId } = toRefs(state);
@@ -31,7 +32,7 @@ async function doSearch() {
    <div class="search">
       <SearchItem v-model="gameId" />
       <SearchItem v-model="leagueId" />
-      <button @click="doSearch" :disabled="loading">Search</button>
+      <q-btn color="primary" label="Search" @click="doSearch" :loading="loading" />
       <pre>{{ JSON.stringify(results, null, 2) }}</pre>
    </div>
 </template>
