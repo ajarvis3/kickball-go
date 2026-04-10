@@ -1,7 +1,9 @@
-export async function fetchSearch(
+export async function fetchPost(
    route: string,
+   headers: HeadersInit,
+   body: BodyInit | null | undefined,
    params?: URLSearchParams,
-): Promise<any> {
+) {
    const query = params?.toString() ? `?${params.toString()}` : "";
    // Read base URL from Vite env; default to empty string so behavior stays the same
    const rawBase = (import.meta.env.VITE_API_BASE ?? "") as string;
@@ -10,7 +12,12 @@ export async function fetchSearch(
    const cleanRoute = route.replace(/^\/+/, "");
    const prefix = base ? `${base}/` : "/";
    const url = `${prefix}${cleanRoute}${query}`;
-   const res = await fetch(url);
+   console.log(url);
+   const res = await fetch(url, {
+      method: "POST",
+      headers: headers,
+      body: body,
+   });
    if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
    return res.json();
 }

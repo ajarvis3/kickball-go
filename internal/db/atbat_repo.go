@@ -7,7 +7,6 @@ import (
 	"github.com/ajarvis3/kickball-go/internal/data/storage"
 	"github.com/ajarvis3/kickball-go/internal/keys"
 	"github.com/ajarvis3/kickball-go/internal/mappers"
-	"github.com/ajarvis3/kickball-go/pkg/apperrors"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
@@ -111,9 +110,6 @@ func (r *atBatRepo) ListAtBatsByGame(ctx context.Context, gameID string) ([]doma
 		}
 		outAt = append(outAt, mappers.ItemToAtbat(stored))
 	}
-	if len(outAt) == 0 {
-		return nil, apperrors.ErrNotFound
-	}
 	return outAt, nil
 }
 
@@ -140,9 +136,6 @@ func (r *atBatRepo) ListAtBatsByPlayer(ctx context.Context, playerID string) ([]
 			return nil, err
 		}
 		outAt = append(outAt, mappers.ItemToAtbat(stored))
-	}
-	if len(outAt) == 0 {
-		return nil, apperrors.ErrNotFound
 	}
 	return outAt, nil
 }

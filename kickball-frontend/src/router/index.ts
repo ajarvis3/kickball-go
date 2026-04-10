@@ -20,6 +20,10 @@ const LeagueRulesView = () =>
    import("../components/pages/view/LeagueRulesViewPage.vue");
 const UmpireGameDashboard = () =>
    import("../components/pages/dashboard/umpire/UmpireGameDashboard.vue");
+const LeagueDashboard = () =>
+   import("../components/pages/dashboard/league/LeagueDashboard.vue");
+const GameDashboard = () =>
+   import("../components/pages/dashboard/games/GameDashboard.vue");
 
 const routes = [
    { path: "/", name: "home", component: HelloWorld },
@@ -54,6 +58,12 @@ const routes = [
       component: LeagueView,
       props: true,
    },
+   {
+      path: "/leagues/:id/dashboard",
+      name: "league-dashboard",
+      component: LeagueDashboard,
+      props: true,
+   },
    { path: "/leaguerules", name: "leaguerules", component: LeagueRulesPage },
    {
       path: "/leaguerules/:id",
@@ -61,6 +71,7 @@ const routes = [
       component: LeagueRulesView,
       props: true,
    },
+   { path: "/games/:id/dashboard", name: "game-dashboard", component: GameDashboard, props: true },
 ];
 
 const router = createRouter({

@@ -1,16 +1,30 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
+import { fetchSearch } from "../../../utility/fetchSearch";
 
 const route = useRoute();
-const id = route.params.id as string;
+const atBatId = String(route.query.atBatId || "");
+const gameId = String(route.query.gameId || "");
+const playerId = String(route.query.playerId || "");
 const item = ref<any>(null);
 
 onMounted(async () => {
    try {
-      const res = await fetch(`/atbats/${id}`);
-      if (!res.ok) throw new Error(res.statusText);
-      item.value = await res.json();
+      if (!atBatId) {
+         console.error("atBatId query parameter is required");
+         return;
+      }
+      // Handler supports listing by gameId or playerId
+      if (!gameId && !playerId) {
+         console.error("gameId or playerId query parameter is required to locate at-bat");
+         return;
+      }
+      const params = new URLSearchParams();
+      if (gameId) params.set("gameId", gameId);
+      if (playerId) params.set("playerId", playerId);
+      const atbats = await fetchSearch(`/atbats`, params);
+      item.value = atbats.find((a: any) => a.atBatId === atBatId) || null;
    } catch (err) {
       console.error(err);
    }

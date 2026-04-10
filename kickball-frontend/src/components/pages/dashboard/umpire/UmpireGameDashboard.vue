@@ -7,9 +7,12 @@ import GameData from "./GameData.vue";
 import CountItem from "./CountItem.vue";
 import AtBatControls from "./AtBatControls.vue";
 import AtBatsView from "./AtBatsView.vue";
+import { fetchPost } from "../../../../utility/fetchPost";
+import { fetchSearch } from "../../../../utility/fetchSearch";
 
 const route = useRoute();
-const gameId = route.params.id as string;
+const gameId = String(route.query.gameId || route.params.id || "");
+const leagueId = String(route.query.leagueId || "");
 
 const game = ref<any>(null);
 const atbats = ref<any[]>([]);
@@ -36,7 +39,12 @@ const currentTeamId = computed(() => {
    return game.value?.awayTeamId || "";
 });
 
-function resetState(balls: Ref<number>, strikes: Ref<number>, fouls: Ref<number>, atBatForm: { selectedOutcome: string; rbi: number; playerId: string }) {
+function resetState(
+   balls: Ref<number>,
+   strikes: Ref<number>,
+   fouls: Ref<number>,
+   atBatForm: { selectedOutcome: string; rbi: number; playerId: string },
+) {
    balls.value = 0;
    strikes.value = 0;
    fouls.value = 0;
@@ -46,13 +54,13 @@ function resetState(balls: Ref<number>, strikes: Ref<number>, fouls: Ref<number>
 }
 
 async function postAtBat() {
-   if (!atBatForm.selectedOutcome || !atBatForm.playerId || !game.value) return;
+   if (!atBatForm.selectedOutcome || !game.value) return;
    posting.value = true;
    const payload = {
       gameId: gameId,
       leagueId: game.value.leagueId,
       playerId: atBatForm.playerId,
-      teamId: currentTeamId.value,
+      //   teamId: currentTeamId.value,
       strikes: strikes.value,
       balls: balls.value,
       fouls: fouls.value,
@@ -60,15 +68,11 @@ async function postAtBat() {
       rbi: atBatForm.rbi,
    };
    try {
-      const res = await fetch(`/atbats`, {
-         method: "POST",
-         headers: { "Content-Type": "application/json" },
-         body: JSON.stringify(payload),
-      });
-      if (!res.ok) {
-         const errText = await res.text();
-         throw new Error(errText || res.statusText);
-      }
+      await fetchPost(
+         `/atbats`,
+         { "Content-Type": "application/json" },
+         JSON.stringify(payload),
+      );
       // refresh resources
       const [g, a] = await Promise.all([fetchGame(), fetchAtBats()]);
       game.value = g;
@@ -89,16 +93,15 @@ function postAtBatConfirmed() {
 }
 
 async function fetchGame() {
-   const res = await fetch(`/games/${gameId}`);
-   if (!res.ok) throw new Error(res.statusText);
-   return res.json();
+   const params = new URLSearchParams();
+   if (gameId) params.set("gameId", gameId);
+   if (leagueId) params.set("leagueId", leagueId);
+   return fetchSearch(`/games`, params);
 }
 
 async function fetchAtBats() {
    const params = new URLSearchParams({ gameId: gameId });
-   const res = await fetch(`/atbats?` + params.toString());
-   if (!res.ok) throw new Error(res.statusText);
-   return res.json();
+   return fetchSearch(`/atbats`, params);
 }
 
 onMounted(async () => {

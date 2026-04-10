@@ -113,6 +113,9 @@ func handleMethods(ctx context.Context, req events.APIGatewayProxyRequest, post 
 		return post(ctx, req)
 	case "GET":
 		return get(ctx, req)
+	case "OPTIONS":
+		// Respond to CORS preflight requests with 200 and appropriate headers
+		return responses.JsonResponse(http.StatusOK, map[string]string{"status": "ok"}), nil
 	default:
 		return responses.JsonResponse(http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"}), nil
 	}

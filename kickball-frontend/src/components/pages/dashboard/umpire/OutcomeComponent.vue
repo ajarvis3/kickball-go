@@ -1,35 +1,35 @@
 <script setup lang="ts">
-const model = defineModel({ type: String, default: '' });
+const model = defineModel({ type: String, default: "" });
 
 const defaultOutcomes = [
-  'single',
-  'double',
-  'triple',
-  'homerun',
-  'walk',
-  'sacrifice',
-  'error',
-  'fielderschoice',
-  'out',
-  'strikeout',
-  'doubleplay',
-  'tripleplay',
+   "single",
+   "double",
+   "triple",
+   "homerun",
+   "walk",
+   "sacrifice",
+   "error",
+   "fielderschoice",
+   "out",
+   "strikeout",
+   "doubleplay",
+   "tripleplay",
 ];
 
 const props = defineProps<{
-  options?: string[];
-  label?: string;
+   options?: string[];
+   label?: string;
 }>();
 </script>
 
 <template>
-  <div>
-    <label>{{ props.label ?? 'Outcome' }}:</label>
-    <q-select v-model="model" :options="props.options ?? defaultOutcomes" emit-value map-options />
-  </div>
+   <div>
+      <label>{{ props.label ?? "Outcome" }}:</label>
+      <q-select
+         v-model="model"
+         :options="props.options ?? defaultOutcomes"
+         emit-value
+         map-options
+      />
+   </div>
 </template>
-
-<style scoped>
-/* small spacing to align with dashboard styles */
-div { margin-bottom: 0.5rem; }
-</style>

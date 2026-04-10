@@ -123,6 +123,16 @@ export class KickballStack extends cdk.Stack {
                payloadFormatVersion: apigwv2.PayloadFormatVersion.VERSION_1_0,
             },
          ),
+         // Configure CORS so browsers can perform preflight requests during development
+         corsPreflight: {
+            allowOrigins: ["*"],
+            allowMethods: [
+               apigwv2.CorsHttpMethod.GET,
+               apigwv2.CorsHttpMethod.POST,
+               apigwv2.CorsHttpMethod.OPTIONS,
+            ],
+            allowHeaders: ["Content-Type", "Authorization"],
+         },
          createDefaultStage: true,
       });
 

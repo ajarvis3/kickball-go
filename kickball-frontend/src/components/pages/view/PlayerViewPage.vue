@@ -1,16 +1,22 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
+import { fetchSearch } from "../../../utility/fetchSearch";
 
 const route = useRoute();
-const id = route.params.id as string;
+const playerId = String(route.query.playerId || "");
+const teamId = String(route.query.teamId || "");
 const item = ref<any>(null);
 
 onMounted(async () => {
    try {
-      const res = await fetch(`/players/${id}`);
-      if (!res.ok) throw new Error(res.statusText);
-      item.value = await res.json();
+      if (!playerId || !teamId) {
+         console.error("playerId and teamId query parameters are required");
+         return;
+      }
+      const params = new URLSearchParams({ teamId });
+      const players = await fetchSearch(`/players`, params);
+      item.value = players.find((p: any) => p.playerId === playerId) || null;
    } catch (err) {
       console.error(err);
    }

@@ -27,6 +27,9 @@ const props = defineProps<{
 
 <style scoped>
 .text-caption {
-   color: rgba(0, 0, 0, 0.6);
+   color: var(--text);
+}
+.text-subtitle2 {
+   color: var(--text);
 }
 </style>
